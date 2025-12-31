@@ -1,0 +1,237 @@
+.page {
+  min-height: 100vh;
+  background: #0f0f0f;
+  color: #f1f1f1;
+}
+
+/* topbar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #0f0f0f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #ff0033;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+.name {
+  font-weight: 800;
+}
+
+/* content */
+.content {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+/* states */
+.state {
+  padding: 12px 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.state.error {
+  color: #ff6b6b;
+}
+
+/* profile card */
+.card {
+  background: #181818;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.head {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.uname {
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.name-line {
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 2px;
+}
+
+.since {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 6px;
+}
+
+.rows {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+}
+
+.label {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.value {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ===== VIDEOS ON PROFILE (match profile UI) ===== */
+
+.videos-card {
+  margin-top: 16px;
+}
+
+/* header u okviru card-a */
+.vhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+}
+
+.vtitle {
+  font-weight: 900;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.vsub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* grid kao “kartice”, ali mirno i čisto kao profil */
+.vgrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+/* svaka video kartica */
+.vitem {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.vitem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.thumb-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.badge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.info {
+  padding: 12px;
+}
+
+.title {
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1.25;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.92);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sub {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

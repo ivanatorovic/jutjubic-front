@@ -1,24 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { Video, VideoService } from '../../videos/video';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { Video, VideoService } from '../../services/video-service/video';
 
 @Component({
   selector: 'app-videos',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './videos.component.html',
-  styleUrls: ['./videos.component.scss']
+  styleUrls: ['./videos.component.scss'],
 })
 export class VideosComponent implements OnInit {
   videos: Video[] = [];
   loading = false;
   error = '';
-  openedId: number | null = null;
 
   constructor(
     public videoService: VideoService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -28,24 +28,46 @@ export class VideosComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.error = '';
-    this.cdr.detectChanges(); // 👈 odmah prikaži "Učitavam..."
+    this.cdr.detectChanges();
 
     this.videoService.getAll().subscribe({
       next: (data) => {
         this.videos = data ?? [];
         this.loading = false;
-        this.cdr.detectChanges(); // 👈 OVO je ključno
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = `Greška (${err?.status ?? ''})`;
         this.loading = false;
-        this.cdr.detectChanges(); // 👈 i ovde
-      }
+        this.cdr.detectChanges();
+      },
     });
   }
 
-  toggleVideo(id: number) {
-    this.openedId = this.openedId === id ? null : id;
-    this.cdr.detectChanges();
+  openWatch(id: number) {
+    this.router.navigate(['/watch', id]);
+  }
+
+  formatTime(iso?: string): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+
+    const diff = Date.now() - d.getTime();
+    const min = Math.floor(diff / 60000);
+    const h = Math.floor(min / 60);
+    const days = Math.floor(h / 24);
+
+    if (min < 1) return 'upravo sada';
+    if (min < 60) return `pre ${min} min`;
+    if (h < 24) return `pre ${h} h`;
+    if (days < 7) return `pre ${days} dana`;
+    return d.toLocaleDateString();
+  }
+
+  openUser(userId?: number, ev?: Event) {
+    ev?.stopPropagation(); // ⛔ ne otvaraj watch
+    if (!userId) return;
+    this.router.navigate(['/user-profile', userId]);
   }
 }

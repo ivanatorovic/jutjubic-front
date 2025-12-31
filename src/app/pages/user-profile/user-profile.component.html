@@ -1,0 +1,81 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+  </header>
+
+  <main class="content">
+    <div *ngIf="loading" class="state">Učitavam profil…</div>
+    <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+    <section *ngIf="!loading && !error && user as u" class="card">
+      <div class="head">
+        <div class="avatar">
+          {{ (u.username ?? '?').slice(0, 1).toUpperCase() }}
+        </div>
+
+        <div class="htext">
+          <div class="uname">@{{ u.username }}</div>
+          <div class="name-line">{{ u.firstName }} {{ u.lastName }}</div>
+          <div class="since">Na jutjubicu od: {{ formatDate(u.createdAt) }}</div>
+        </div>
+      </div>
+
+      <div class="rows">
+        <div class="row">
+          <div class="label">Adresa</div>
+          <div class="value">{{ u.address }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ✅ LISTA VIDEA (isti stil kao /videos) -->
+    <section *ngIf="!loading && !error && user as u" class="card videos-card">
+      <div class="vhead">
+        <div class="vtitle">Videi korisnika</div>
+        <div class="vsub">@{{ u.username }}</div>
+      </div>
+
+      <div *ngIf="videosLoading" class="state">Učitavam videe…</div>
+      <div *ngIf="!videosLoading && videosError" class="state error">
+        {{ videosError }}
+      </div>
+
+      <div *ngIf="!videosLoading && !videosError">
+        <div *ngIf="videos.length === 0" class="state">Ovaj korisnik još nema videe.</div>
+
+        <div class="vgrid" *ngIf="videos.length > 0">
+          <article
+            class="vitem"
+            *ngFor="let v of videos"
+            (click)="openWatch(v.id)"
+            role="button"
+            tabindex="0"
+            (keydown.enter)="openWatch(v.id)"
+            (keydown.space)="openWatch(v.id)"
+          >
+            <div class="thumb-wrap">
+              <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
+              <div class="badge" *ngIf="v.location">📍 {{ v.location }}</div>
+            </div>
+
+            <div class="info">
+              <div class="title" [title]="v.title">{{ v.title }}</div>
+
+              <div class="sub">
+                <span class="time">{{ formatTime(v.createdAt) }}</span>
+              </div>
+
+              <div class="stats">
+                <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
+                <span class="chip">💬 {{ v.commentCount ?? 0 }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

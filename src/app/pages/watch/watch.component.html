@@ -1,0 +1,106 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+  </header>
+
+  <main class="content">
+    <!-- PLAYER uvek -->
+    <div class="player-wrap" *ngIf="src">
+      <video class="player" [src]="src" controls autoplay preload="metadata"></video>
+    </div>
+
+    <!-- hard error (loš id) -->
+    <div *ngIf="error" class="state error">{{ error }}</div>
+
+    <!-- meta state -->
+    <div *ngIf="!error && metaLoading" class="state">Učitavam detalje…</div>
+    <div *ngIf="!error && !metaLoading && metaError" class="state warn">{{ metaError }}</div>
+
+    <!-- ✅ META čim postoji video -->
+    <ng-container *ngIf="video as v">
+      <h1 class="title">{{ v.title }}</h1>
+
+      <div class="meta-row">
+        <!-- LEVO: autor -->
+        <div class="author">
+          <div
+            class="avatar clickable"
+            (click)="openUser(v.userId, $event)"
+            role="link"
+            tabindex="0"
+            (keydown.enter)="openUser(v.userId, $event)"
+          >
+            {{ (v.username ?? '?').slice(0, 1).toUpperCase() }}
+          </div>
+
+          <div>
+            <div
+              class="username clickable"
+              (click)="openUser(v.userId, $event)"
+              role="link"
+              tabindex="0"
+              (keydown.enter)="openUser(v.userId, $event)"
+            >
+              {{ v.username ?? 'Nepoznat autor' }}
+            </div>
+            <div class="time">{{ formatTime(v.createdAt) }}</div>
+          </div>
+        </div>
+
+        <!-- DESNO: stats -->
+        <div class="stats">
+          <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
+          <span class="chip">💬 {{ v.commentCount ?? comments.length }}</span>
+        </div>
+      </div>
+
+      <p class="desc" *ngIf="v.description">{{ v.description }}</p>
+
+      <!-- KOMENTARI -->
+      <section class="comments">
+        <div class="comments-head">
+          <div class="comments-title">Komentari ({{ comments.length }})</div>
+        </div>
+
+        <div *ngIf="commentsLoading" class="state">Učitavam komentare…</div>
+        <div *ngIf="!commentsLoading && commentsError" class="state warn">{{ commentsError }}</div>
+
+        <div *ngIf="!commentsLoading && !commentsError && comments.length === 0" class="state">
+          Nema komentara još.
+        </div>
+
+        <article class="comment" *ngFor="let c of comments">
+          <div
+            class="c-avatar clickable"
+            (click)="openUser(c.userId, $event)"
+            role="link"
+            tabindex="0"
+            (keydown.enter)="openUser(c.userId, $event)"
+          >
+            {{ (c.username ?? '?').slice(0, 1).toUpperCase() }}
+          </div>
+
+          <div class="c-body">
+            <div class="c-head">
+              <span
+                class="c-user clickable"
+                (click)="openUser(c.userId, $event)"
+                role="link"
+                tabindex="0"
+                (keydown.enter)="openUser(c.userId, $event)"
+              >
+                {{ c.username }}
+              </span>
+              <span class="dot">•</span>
+              <span class="c-time">{{ formatTime(c.createdAt) }}</span>
+            </div>
+            <div class="c-text">{{ c.text }}</div>
+          </div>
+        </article>
+      </section>
+    </ng-container>
+  </main>
+</div>

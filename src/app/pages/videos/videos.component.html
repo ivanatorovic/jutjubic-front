@@ -1,38 +1,65 @@
 <div class="page">
-  <div class="topbar">
-    <h2>Svi videi</h2>
-    <button class="btn" (click)="load()">Osveži</button>
+  <!-- Top bar -->
+  <header class="topbar">
+  <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+    <span class="logo">▶</span>
+    <span class="name">jutjubic</span>
+  </a>
+
+  <!-- DESNO -->
+  <div class="top-actions">
+    <button class="btn ghost">Prijava</button>
+    <button class="btn primary">Registracija</button>
   </div>
+</header>
+
 
   <div *ngIf="loading" class="state">Učitavam videe...</div>
   <div *ngIf="!loading && error" class="state error">{{ error }}</div>
 
   <div class="grid" *ngIf="!loading && !error">
-    <div class="card" *ngFor="let v of videos">
+    <article
+      class="card"
+      *ngFor="let v of videos"
+      (click)="openWatch(v.id)"
+      role="button"
+      tabindex="0"
+      (keydown.enter)="openWatch(v.id)"
+      (keydown.space)="openWatch(v.id)"
+    >
+      <div class="thumb-wrap">
+        <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
 
-      <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
-
-      <div class="meta">
-        <h3>{{ v.title }}</h3>
-        <p>{{ v.description }}</p>
-
-        <div class="actions">
-          <button class="btn secondary" (click)="toggleVideo(v.id)">
-            {{ openedId === v.id ? 'Sakrij' : 'Pusti' }}
-          </button>
-
-          <a class="btn secondary" [href]="videoService.streamUrl(v.id)" target="_blank">
-            Otvori u novom tabu
-          </a>
-        </div>
+        <div class="badge" *ngIf="v.location">📍 {{ v.location }}</div>
       </div>
 
-      <!-- ✅ video se učitava SAMO kad klikneš -->
-      <video *ngIf="openedId === v.id" class="player" controls preload="metadata">
-        <source [src]="videoService.streamUrl(v.id)" type="video/mp4" />
-      </video>
+      <div class="info">
+        <div class="title" [title]="v.title">{{ v.title }}</div>
 
-    </div>
+        <div class="sub">
+          <span class="user"
+      (click)="openUser(v.userId, $event)"
+      role="link"
+      tabindex="0"
+      (keydown.enter)="openUser(v.userId, $event)"
+>
+  <span class="avatar">
+    {{ (v.username ?? '?').slice(0,1).toUpperCase() }}
+  </span>
+  <span class="uname">{{ v.username ?? 'Nepoznat autor' }}</span>
+</span>
+
+
+          <span class="dot">•</span>
+          <span class="time">{{ formatTime(v.createdAt) }}</span>
+        </div>
+
+        <div class="stats">
+          <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
+          <span class="chip">💬 {{ v.commentCount ?? 0 }}</span>
+        </div>
+      </div>
+    </article>
 
     <div *ngIf="videos.length === 0" class="state">
       Nema videa još.

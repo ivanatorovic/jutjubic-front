@@ -1,0 +1,255 @@
+.page {
+  min-height: 100vh;
+  background: #0f0f0f;
+  color: #f1f1f1;
+}
+
+/* topbar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #0f0f0f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #ff0033;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+.name {
+  font-weight: 800;
+}
+
+/* states */
+.state {
+  padding: 18px 16px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.state.error {
+  color: #ff6b6b;
+}
+
+/* content */
+.content {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+/* player */
+.player-wrap {
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.player {
+  width: 100%;
+  display: block;
+  background: #000;
+}
+
+/* meta */
+.meta {
+  display: grid;
+  gap: 14px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+/* author row */
+.sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.author {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.author-text .username {
+  font-weight: 700;
+}
+
+.author-text .time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.author {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ⬅️ OVO gura stats skroz desno */
+.stats {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+/* stats */
+.stats {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* description */
+.description {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.state.warn {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.comments {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comments-title {
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.c-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.c-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.c-user {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 700;
+}
+
+.c-text {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.45;
+}
+
+.dot {
+  opacity: 0.6;
+}
+
+.author.clickable {
+  cursor: pointer;
+}
+.author.clickable:hover {
+  text-decoration: underline;
+}
+
+.c-user.clickable {
+  cursor: pointer;
+}
+.c-user.clickable:hover {
+  text-decoration: underline;
+}
+
+/* univerzalno klikabilno */
+.clickable {
+  cursor: pointer;
+}
+
+/* da se vidi hover (na tekst) */
+.clickable:hover .username,
+.clickable:hover .c-user {
+  text-decoration: underline;
+}
+
+/* avatar hover efekat (da se vidi da je klikabilan) */
+.avatar.clickable:hover,
+.c-avatar.clickable:hover {
+  filter: brightness(1.15);
+}
+
+.username.clickable {
+  cursor: pointer;
+}
+.username.clickable:hover {
+  text-decoration: underline;
+}

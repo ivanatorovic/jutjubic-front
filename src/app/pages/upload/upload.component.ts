@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { VideoService } from '../../videos/video';
+import { VideoService } from '../../services/video-service/video';
 import { CommonModule } from '@angular/common';
-
 
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule,FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './upload.component.html',
-  styleUrls: ['./upload.component.scss']
+  styleUrls: ['./upload.component.scss'],
 })
 export class UploadComponent {
   title = '';
@@ -40,15 +39,14 @@ export class UploadComponent {
 
     const info = {
       title: this.title,
-      description: this.description
+      description: this.description,
     };
 
     this.msg = 'Upload u toku...';
 
     this.videoService.upload(info, this.thumbnailFile, this.videoFile).subscribe({
-      next: () => this.msg = 'Upload uspešan ✅',
-      error: err =>
-        this.msg = 'Greška ❌ ' + (err?.error?.message ?? err.status)
+      next: () => (this.msg = 'Upload uspešan ✅'),
+      error: (err) => (this.msg = 'Greška ❌ ' + (err?.error?.message ?? err.status)),
     });
   }
 }
