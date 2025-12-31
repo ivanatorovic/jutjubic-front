@@ -1,0 +1,60 @@
+<div class="page">
+  <div class="card">
+    <div class="header">
+      <h1>Upload videa</h1>
+      <p>Dodaj naslov, opis i izaberi fajlove.</p>
+    </div>
+
+    <div class="form">
+      <div class="field">
+        <label>Naslov</label>
+        <input [(ngModel)]="title" type="text" placeholder="npr. Moj prvi video" />
+      </div>
+
+      <div class="field">
+        <label>Opis</label>
+        <textarea [(ngModel)]="description" rows="5" placeholder="Kratak opis videa..."></textarea>
+      </div>
+
+      <!-- Ako još nemaš tags/location u TS-u, možeš ovo za sad preskočiti -->
+      <!--
+      <div class="grid">
+        <div class="field">
+          <label>Lokacija</label>
+          <input [(ngModel)]="location" type="text" placeholder="npr. Novi Sad" />
+        </div>
+
+        <div class="field">
+          <label>Tagovi (odvoj zarezom)</label>
+          <input [(ngModel)]="tagsText" type="text" placeholder="npr. fun, vlog, isa" />
+        </div>
+      </div>
+      -->
+
+      <div class="grid">
+        <div class="field">
+          <label>Thumbnail (slika)</label>
+          <input class="file" type="file" accept="image/*" (change)="onThumbnailChange($event)" />
+          <div class="hint" *ngIf="thumbnailFile">Izabrano: <b>{{ thumbnailFile.name }}</b></div>
+          <div class="hint" *ngIf="!thumbnailFile">Podržano: JPG/PNG</div>
+        </div>
+
+        <div class="field">
+          <label>Video fajl</label>
+          <input class="file" type="file" accept="video/*" (change)="onVideoChange($event)" />
+          <div class="hint" *ngIf="videoFile">Izabrano: <b>{{ videoFile.name }}</b></div>
+          <div class="hint" *ngIf="!videoFile">Podržano: MP4 (ili video/*)</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" (click)="upload()" [disabled]="!thumbnailFile || !videoFile || !title.trim()">
+          Upload
+        </button>
+        <span class="status" [class.ok]="msg.includes('✅')" [class.bad]="msg.includes('❌')">
+          {{ msg }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
