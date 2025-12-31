@@ -1,0 +1,92 @@
+
+
+.topbar h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Button */
+.btn {
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  color: #0b0f17;
+  background: linear-gradient(90deg, #7a5cff, #00c8ff);
+}
+
+/* States */
+.state {
+  padding: 16px;
+  opacity: 0.8;
+}
+
+.state.error {
+  color: #ff8a8a;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+/* Card */
+.card {
+  background: rgba(17, 22, 33, 0.9);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+}
+
+/* Thumbnail */
+.thumb {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Meta */
+.meta {
+  padding: 14px;
+}
+
+.meta h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.meta p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  opacity: 0.75;
+}
+
+/* Video */
+.player {
+  width: 100%;
+  background: black;
+  display: block;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn.secondary {
+  background: rgba(255,255,255,.08);
+  color: #e8ecf4;
+  border: 1px solid rgba(255,255,255,.12);
+  text-decoration: none;
+}

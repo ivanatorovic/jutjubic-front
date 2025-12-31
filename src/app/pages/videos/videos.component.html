@@ -1,0 +1,41 @@
+<div class="page">
+  <div class="topbar">
+    <h2>Svi videi</h2>
+    <button class="btn" (click)="load()">Osveži</button>
+  </div>
+
+  <div *ngIf="loading" class="state">Učitavam videe...</div>
+  <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+  <div class="grid" *ngIf="!loading && !error">
+    <div class="card" *ngFor="let v of videos">
+
+      <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
+
+      <div class="meta">
+        <h3>{{ v.title }}</h3>
+        <p>{{ v.description }}</p>
+
+        <div class="actions">
+          <button class="btn secondary" (click)="toggleVideo(v.id)">
+            {{ openedId === v.id ? 'Sakrij' : 'Pusti' }}
+          </button>
+
+          <a class="btn secondary" [href]="videoService.streamUrl(v.id)" target="_blank">
+            Otvori u novom tabu
+          </a>
+        </div>
+      </div>
+
+      <!-- ✅ video se učitava SAMO kad klikneš -->
+      <video *ngIf="openedId === v.id" class="player" controls preload="metadata">
+        <source [src]="videoService.streamUrl(v.id)" type="video/mp4" />
+      </video>
+
+    </div>
+
+    <div *ngIf="videos.length === 0" class="state">
+      Nema videa još.
+    </div>
+  </div>
+</div>
