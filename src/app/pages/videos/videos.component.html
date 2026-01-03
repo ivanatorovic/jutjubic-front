@@ -1,18 +1,37 @@
 <div class="page">
   <!-- Top bar -->
   <header class="topbar">
-  <a class="brand" routerLink="/videos" aria-label="jutjubic home">
-    <span class="logo">▶</span>
-    <span class="name">jutjubic</span>
-  </a>
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
 
-  <!-- DESNO -->
-  <div class="top-actions">
-    <button class="btn ghost">Prijava</button>
-    <button class="btn primary">Registracija</button>
-  </div>
-</header>
+    <!-- DESNO -->
+    <div class="top-actions">
+      <!-- ako nije ulogovan -->
+      <ng-container *ngIf="!isLoggedIn(); else logged">
+      <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
+      <button type="button" class="btn primary" routerLink="/register">Registracija</button>
 
+      </ng-container>
+
+      <!-- ako jeste ulogovan -->
+      <ng-template #logged>
+        <button class="btn ghost" routerLink="/upload">Upload</button>
+
+        <!-- Profil se prikazuje samo ako imamo userId iz tokena -->
+        <button
+          class="btn ghost"
+          *ngIf="currentUserId !== null"
+          [routerLink]="['/user-profile', currentUserId]"
+        >
+          Profil
+        </button>
+
+        <button class="btn primary" (click)="logout()">Logout</button>
+      </ng-template>
+    </div>
+  </header>
 
   <div *ngIf="loading" class="state">Učitavam videe...</div>
   <div *ngIf="!loading && error" class="state error">{{ error }}</div>
@@ -37,18 +56,18 @@
         <div class="title" [title]="v.title">{{ v.title }}</div>
 
         <div class="sub">
-          <span class="user"
-      (click)="openUser(v.userId, $event)"
-      role="link"
-      tabindex="0"
-      (keydown.enter)="openUser(v.userId, $event)"
->
-  <span class="avatar">
-    {{ (v.username ?? '?').slice(0,1).toUpperCase() }}
-  </span>
-  <span class="uname">{{ v.username ?? 'Nepoznat autor' }}</span>
-</span>
-
+          <span
+            class="user"
+            (click)="openUser(v.userId, $event)"
+            role="link"
+            tabindex="0"
+            (keydown.enter)="openUser(v.userId, $event)"
+          >
+            <span class="avatar">
+              {{ (v.username ?? '?').slice(0, 1).toUpperCase() }}
+            </span>
+            <span class="uname">{{ v.username ?? 'Nepoznat autor' }}</span>
+          </span>
 
           <span class="dot">•</span>
           <span class="time">{{ formatTime(v.createdAt) }}</span>

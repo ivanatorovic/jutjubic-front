@@ -1,0 +1,57 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+
+    <div class="top-actions">
+      <button type="button" class="btn ghost" routerLink="/videos">Nazad</button>
+      <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
+    </div>
+  </header>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Registracija</h2>
+
+      <label>Email</label>
+      <input [(ngModel)]="form.email" />
+
+      <label>Username</label>
+      <input [(ngModel)]="form.username" />
+
+      <label>Ime</label>
+      <input [(ngModel)]="form.firstName" />
+
+      <label>Prezime</label>
+      <input [(ngModel)]="form.lastName" />
+
+      <label>Adresa</label>
+      <input [(ngModel)]="form.address" />
+
+      <label>Lozinka</label>
+      <input type="password" [(ngModel)]="form.password" />
+
+      <label>Potvrdi lozinku</label>
+      <input type="password" [(ngModel)]="form.confirmPassword" />
+
+      <button
+        type="button"
+        class="btn primary full"
+        (click)="register()"
+        [disabled]="loading"
+      >
+        {{ loading ? 'Slanje...' : 'Registruj se' }}
+      </button>
+
+      <p class="error" *ngIf="error">{{ error }}</p>
+      <p class="success" *ngIf="success">{{ success }}</p>
+
+      <p class="hint">
+        Već imaš nalog?
+        <a routerLink="/login">Uloguj se</a>
+      </p>
+    </div>
+  </div>
+</div>

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Video, VideoService } from '../../services/video-service/video';
+import { AuthService } from '../../services/auth-service/auth.service';
 
 @Component({
   selector: 'app-videos',
@@ -15,13 +16,17 @@ export class VideosComponent implements OnInit {
   loading = false;
   error = '';
 
+  currentUserId: number | null = null;
+
   constructor(
     public videoService: VideoService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.currentUserId = this.auth.getUserIdFromToken();
     this.load();
   }
 
@@ -48,6 +53,12 @@ export class VideosComponent implements OnInit {
     this.router.navigate(['/watch', id]);
   }
 
+  openUser(userId?: number, ev?: Event) {
+    ev?.stopPropagation(); // ⛔ ne otvaraj watch
+    if (!userId) return;
+    this.router.navigate(['/user-profile', userId]);
+  }
+
   formatTime(iso?: string): string {
     if (!iso) return '';
     const d = new Date(iso);
@@ -65,9 +76,12 @@ export class VideosComponent implements OnInit {
     return d.toLocaleDateString();
   }
 
-  openUser(userId?: number, ev?: Event) {
-    ev?.stopPropagation(); // ⛔ ne otvaraj watch
-    if (!userId) return;
-    this.router.navigate(['/user-profile', userId]);
+  isLoggedIn(): boolean {
+    return this.auth.isLoggedIn();
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/videos']);
   }
 }

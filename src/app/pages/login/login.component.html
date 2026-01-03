@@ -1,0 +1,42 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+
+    <div class="top-actions">
+      <button type="button" class="btn ghost" routerLink="/videos">Nazad</button>
+      <button type="button" class="btn primary" routerLink="/register">Registracija</button>
+    </div>
+  </header>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Prijava</h2>
+
+      <label>Email</label>
+      <input [(ngModel)]="email" />
+
+      <label>Lozinka</label>
+      <input type="password" [(ngModel)]="password" />
+
+      <button
+        type="button"
+        class="btn primary full"
+        (click)="login()"
+        [disabled]="loading"
+      >
+        {{ loading ? 'Prijavljivanje...' : 'Uloguj se' }}
+      </button>
+
+      <p class="error" *ngIf="error">{{ error }}</p>
+      <p class="success" *ngIf="success">{{ success }}</p>
+
+      <p class="hint">
+        Nemaš nalog?
+        <a routerLink="/register">Registruj se</a>
+      </p>
+    </div>
+  </div>
+</div>
