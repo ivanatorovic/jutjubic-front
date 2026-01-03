@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { Video, VideoService } from '../../services/video-service/video';
+import { UploadProgressService, UploadState } from '../../services/upload-progress.service';
 import { AuthService } from '../../services/auth-service/auth.service';
 
 @Component({
@@ -11,23 +13,46 @@ import { AuthService } from '../../services/auth-service/auth.service';
   templateUrl: './videos.component.html',
   styleUrls: ['./videos.component.scss'],
 })
-export class VideosComponent implements OnInit {
+export class VideosComponent implements OnInit, OnDestroy {
   videos: Video[] = [];
   loading = false;
   error = '';
+    uploadState: UploadState = { status: 'idle' };
 
-  currentUserId: number | null = null;
+  private destroy$ = new Subject<void>();
+    currentUserId: number | null = null;
 
   constructor(
     public videoService: VideoService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private auth: AuthService
+    private uploadProgress: UploadProgressService,
+     private auth: AuthService
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.auth.getUserIdFromToken();
+     this.uploadProgress.state$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((s) => {
+        this.uploadState = s;
+
+        // kad završi upload, osveži listu videa
+        if (s.status === 'done') {
+          this.load();
+          // skloni banner posle par sekundi (opciono)
+          setTimeout(() => this.uploadProgress.clear(), 3000);
+        }
+
+        this.cdr.detectChanges();
+      });
+
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   load(): void {
@@ -53,11 +78,7 @@ export class VideosComponent implements OnInit {
     this.router.navigate(['/watch', id]);
   }
 
-  openUser(userId?: number, ev?: Event) {
-    ev?.stopPropagation(); // ⛔ ne otvaraj watch
-    if (!userId) return;
-    this.router.navigate(['/user-profile', userId]);
-  }
+ 
 
   formatTime(iso?: string): string {
     if (!iso) return '';
@@ -76,7 +97,13 @@ export class VideosComponent implements OnInit {
     return d.toLocaleDateString();
   }
 
-  isLoggedIn(): boolean {
+  openUser(userId?: number, ev?: Event) {
+    ev?.stopPropagation(); // ⛔ ne otvaraj watch
+    if (!userId) return;
+    this.router.navigate(['/user-profile', userId]);
+  }
+
+    isLoggedIn(): boolean {
     return this.auth.isLoggedIn();
   }
 

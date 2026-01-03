@@ -219,3 +219,41 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+.upload-banner {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f0f0f;
+}
+
+.ub-row {
+  display: grid;
+  gap: 8px;
+}
+
+.ub-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ub-progress {
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.ub-bar {
+  height: 100%;
+  width: 0%;
+  background: #ff0033;
+  transition: width 120ms linear;
+}
+
+.ub-row.ok .ub-text {
+  color: #7dffb7;
+}
+
+.ub-row.bad .ub-text {
+  color: #ff6b6b;
+}
