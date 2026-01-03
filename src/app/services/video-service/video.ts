@@ -1,16 +1,18 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { Observable } from 'rxjs';
 
 export interface Video {
   id: number;
   title: string;
   description: string;
+  tags: string[];
 
   thumbnailPath?: string;
   videoPath?: string;
 
-  // ✅ sa backenda (public prikaz)
+  // sa backenda (public prikaz)
   username?: string;
   userId?: number;
   likeCount?: number;
@@ -43,12 +45,17 @@ export class VideoService {
     return `${environment.apiUrl}/api/videos/${id}/stream`;
   }
 
-  upload(info: any, thumbnail: File, video: File) {
+  // ✅ upload sa progress event-ovima
+  upload(info: any, thumbnail: File, video: File): Observable<HttpEvent<any>> {
     const fd = new FormData();
     fd.append('info', JSON.stringify(info));
     fd.append('thumbnail', thumbnail);
     fd.append('video', video);
-    return this.http.post(`${environment.apiUrl}/api/videos/upload`, fd);
+
+    return this.http.post<any>(`${environment.apiUrl}/api/videos/upload`, fd, {
+      observe: 'events',
+      reportProgress: true,
+    });
   }
 
   getById(id: number) {
@@ -56,6 +63,8 @@ export class VideoService {
   }
 
   getComments(id: number) {
-    return this.http.get<CommentPublicDto[]>(`${environment.apiUrl}/api/videos/${id}/comments`);
+    return this.http.get<CommentPublicDto[]>(
+      `${environment.apiUrl}/api/videos/${id}/comments`
+    );
   }
 }
