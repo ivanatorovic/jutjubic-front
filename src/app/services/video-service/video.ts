@@ -19,6 +19,7 @@ export interface Video {
   commentCount?: number;
   createdAt?: string; // ISO string
   location?: string;
+   viewCount?: number;
 }
 
 export interface CommentPublicDto {
