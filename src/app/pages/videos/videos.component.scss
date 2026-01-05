@@ -68,14 +68,18 @@
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 120ms ease, border-color 120ms ease;
-  outline: none;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
 }
+
 
 .card:focus-visible {
   box-shadow: 0 0 0 2px rgba(255, 0, 51, 0.6);
@@ -114,15 +118,16 @@
 }
 
 .title {
-  font-size: 14px;
+  font-size: 16px;          /* ⬅️ bilo 14px */
   font-weight: 700;
-  line-height: 1.25;
-  max-height: 2.5em;
+  line-height: 1.35;        /* ⬅️ malo više prostora */
+  max-height: 2.7em;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
 
 .sub {
   display: flex;
@@ -257,3 +262,21 @@
 .ub-row.bad .ub-text {
   color: #ff6b6b;
 }
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+ font-size: 46px;
+  text-shadow: 0 6px 20px rgba(0,0,0,.6);
+  color: white;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.thumb-wrap:hover .play-overlay {
+  opacity: 1;
+}
+

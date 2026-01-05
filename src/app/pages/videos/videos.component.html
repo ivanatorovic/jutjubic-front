@@ -79,11 +79,24 @@
       (keydown.enter)="openWatch(v.id)"
       (keydown.space)="openWatch(v.id)"
     >
-      <div class="thumb-wrap">
-        <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
+   <div
+  class="thumb-wrap"
+  
+>
+  <img
+    class="thumb"
+    [src]="videoService.thumbnailUrl(v.id)"
+    alt="thumbnail"
+  />
 
-        <div class="badge" *ngIf="v.location">📍 {{ v.location }}</div>
-      </div>
+  
+
+  <div class="play-overlay">▶</div>
+
+  <div class="badge" *ngIf="v.location">📍 {{ v.location }}</div>
+</div>
+
+
 
       <div class="info">
         <div class="title" [title]="v.title">{{ v.title }}</div>

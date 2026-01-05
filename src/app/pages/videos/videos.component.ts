@@ -111,4 +111,9 @@ export class VideosComponent implements OnInit, OnDestroy {
     this.auth.logout();
     this.router.navigate(['/videos']);
   }
+
+
+
+
+
 }

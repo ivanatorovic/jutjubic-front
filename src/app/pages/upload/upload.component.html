@@ -1,3 +1,4 @@
+<!-- upload.component.html -->
 <div class="page">
   <!-- Top bar -->
   <header class="topbar">
@@ -5,11 +6,6 @@
       <span class="logo">▶</span>
       <span class="name">jutjubic</span>
     </a>
-
-    <div class="top-actions">
-      <button class="btn ghost" routerLink="/login">Prijava</button>
-      <button class="btn primary" routerLink="/register">Registracija</button>
-    </div>
   </header>
 
   <main class="content">
@@ -23,14 +19,23 @@
         <button
           class="btn primary big"
           (click)="upload()"
-          [disabled]="!thumbnailFile || !videoFile || !title.trim()"
+          [disabled]="
+            uploading ||
+            !thumbnailFile ||
+            !videoFile ||
+            !title.trim() ||
+            !description.trim() ||
+            !tags.trim()
+          "
         >
-          Upload
+          <span *ngIf="!uploading">Upload</span>
+          <span *ngIf="uploading" class="spin"></span>
+          <span *ngIf="uploading">Uploading…</span>
         </button>
       </div>
 
       <div class="grid">
-        <!-- LEVO: tekstualni podaci -->
+        <!-- LEVO -->
         <section class="panel">
           <div class="field">
             <label>Naslov</label>
@@ -42,7 +47,7 @@
             <textarea [(ngModel)]="description" placeholder="Kratak opis videa..."></textarea>
           </div>
 
-          <div class="grid-2 split">
+          <div class="grid-2">
             <div class="field">
               <label>Lokacija</label>
               <input [(ngModel)]="location" type="text" placeholder="npr. Novi Sad" />
@@ -51,8 +56,13 @@
             <div class="field">
               <label>Tagovi</label>
               <input [(ngModel)]="tags" type="text" placeholder="npr. fun, vlog, isa" />
+
               <div class="hint">
                 Primer: <span class="chip">#fun</span> <span class="chip">#vlog</span>
+              </div>
+
+              <div class="tags-preview" *ngIf="tagsList().length">
+                <span class="tchip" *ngFor="let t of tagsList()">{{ t }}</span>
               </div>
             </div>
           </div>
@@ -64,7 +74,7 @@
           </div>
         </section>
 
-        <!-- DESNO: fajlovi -->
+        <!-- DESNO -->
         <section class="panel files">
           <!-- THUMB -->
           <div class="file-card">
@@ -74,7 +84,6 @@
                 <div class="file-sub">JPG / PNG</div>
               </div>
 
-              <!-- pravi input je hidden -->
               <input
                 #thumbInput
                 class="hidden-input"
@@ -91,10 +100,22 @@
               {{ thumbnailFile?.name || 'Nije izabrano' }}
             </div>
 
-            <!-- ako imaš thumbnailPreviewUrl u TS-u (što smo ranije dodali), radi preview -->
-            <div class="thumb-preview" *ngIf="thumbnailPreviewUrl">
+            <div class="file-meta" *ngIf="thumbnailFile">
+              <span>{{ formatBytes(thumbnailFile.size) }}</span>
+              <button type="button" class="mini-x" (click)="clearThumb($event)">✕</button>
+            </div>
+
+            <div class="thumb-preview" *ngIf="thumbnailPreviewUrl; else thumbEmpty">
               <img [src]="thumbnailPreviewUrl" alt="thumbnail preview" />
             </div>
+
+            <ng-template #thumbEmpty>
+              <div class="thumb-empty">
+                <div class="thumb-empty-icon">🖼️</div>
+                <div class="thumb-empty-text">Izaberi thumbnail da vidiš preview</div>
+                <div class="thumb-empty-sub">Preporuka: 16:9, JPG/PNG</div>
+              </div>
+            </ng-template>
           </div>
 
           <!-- VIDEO -->
@@ -119,6 +140,11 @@
 
             <div class="file-name" [class.muted]="!videoFile">
               {{ videoFile?.name || 'Nije izabrano' }}
+            </div>
+
+            <div class="file-meta" *ngIf="videoFile">
+              <span>{{ formatBytes(videoFile.size) }}</span>
+              <button type="button" class="mini-x" (click)="clearVideo($event)">✕</button>
             </div>
 
             <div class="mini-hint">
