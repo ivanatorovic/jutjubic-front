@@ -31,170 +31,204 @@
   </header>
 
   <main class="content">
-    <!-- PLAYER uvek -->
-    <div class="player-wrap" *ngIf="src">
-      <video class="player" [src]="src" controls autoplay preload="metadata"></video>
-    </div>
-
-    <!-- hard error (loš id) -->
-    <div *ngIf="error" class="state error">{{ error }}</div>
-
-    <!-- meta state -->
-    <div *ngIf="!error && metaLoading" class="state">Učitavam detalje…</div>
-    <div *ngIf="!error && !metaLoading && metaError" class="state warn">{{ metaError }}</div>
-
-    <!-- ✅ META čim postoji video -->
-    <ng-container *ngIf="video as v">
-      <h1 class="title">{{ v.title }}</h1>
-
-      <div class="tags" *ngIf="v.tags && v.tags.length">
-        <span class="tag" *ngFor="let t of v.tags">#{{ t }}</span>
-      </div>
-
-      <div class="meta-row">
-        <!-- LEVO: autor -->
-        <div class="author">
-          <div
-            class="avatar clickable"
-            (click)="openUser(v.userId, $event)"
-            role="link"
-            tabindex="0"
-            (keydown.enter)="openUser(v.userId, $event)"
-          >
-            {{ (v.username ?? '?').slice(0, 1).toUpperCase() }}
-          </div>
-
-          <div class="author-text">
-            <div
-              class="username clickable"
-              (click)="openUser(v.userId, $event)"
-              role="link"
-              tabindex="0"
-              (keydown.enter)="openUser(v.userId, $event)"
-            >
-              {{ v.username ?? 'Nepoznat autor' }}
-            </div>
-
-            <div class="time">{{ formatTime(v.createdAt) }}</div>
-
-            <div class="location" *ngIf="v.location && v.location.trim()">{{ v.location }}</div>
-          </div>
-        </div>
-        <!-- DESNO: stats -->
-        <div class="stats">
-          <!-- 👁️ uklonjeno, samo tekst -->
-          <div class="views">{{ v.viewCount ?? 0 }} pregleda</div>
-
-          <!-- chipovi ostaju -->
-          <div class="stats-chips">
-            <button
-              type="button"
-              class="chip like-chip"
-              [disabled]="!isLoggedIn() || likeBusy"
-              (click)="toggleLike($event)"
-            >
-              👍 {{ v.likeCount ?? 0 }}
-            </button>
-
-            <span class="chip"> 💬 {{ v.commentCount ?? comments.length }} </span>
-          </div>
-        </div>
-      </div>
-
-      <p class="desc" *ngIf="v.description">{{ v.description }}</p>
-
-      <!-- KOMENTARI -->
-      <section class="comments">
-        <div class="comments-head">
-          <div class="comments-title">Komentari ({{ commentsTotal || comments.length }})</div>
+    <div class="watch-layout">
+      <!-- ================= LEFT (main) ================= -->
+      <section class="main-col">
+        <!-- PLAYER uvek -->
+        <div class="player-wrap" *ngIf="src">
+          <video class="player" [src]="src" controls autoplay preload="metadata"></video>
         </div>
 
-        <!-- DODAJ KOMENTAR -->
-        <div class="comment-compose" *ngIf="video as v">
-          <div class="compose-row">
-            <div class="c-avatar me">
-              {{ (currentUsername ?? '?').slice(0, 1).toUpperCase() }}
-            </div>
+        <!-- hard error (loš id) -->
+        <div *ngIf="error" class="state error">{{ error }}</div>
 
-            <div class="compose-box">
-              <textarea
-                class="compose-input"
-                rows="1"
-                [value]="newComment"
-                (input)="onCommentInput($event)"
-                placeholder="Dodaj komentar…"
-                [disabled]="postingComment"
-              ></textarea>
+        <!-- meta state -->
+        <div *ngIf="!error && metaLoading" class="state">Učitavam detalje…</div>
+        <div *ngIf="!error && !metaLoading && metaError" class="state warn">{{ metaError }}</div>
 
-              <div class="compose-actions" *ngIf="newComment.trim().length > 0 || composeFocused">
-                <button
-                  type="button"
-                  class="btn ghost"
-                  (click)="cancelComment()"
-                  [disabled]="postingComment"
-                >
-                  Otkaži
-                </button>
+        <!-- ✅ META čim postoji video -->
+        <ng-container *ngIf="video as v">
+          <h1 class="title">{{ v.title }}</h1>
 
-                <button
-                  type="button"
-                  class="btn primary"
-                  (click)="postComment()"
-                  [disabled]="postingComment || !newComment.trim()"
-                >
-                  {{ postingComment ? 'Šaljem…' : 'Komentariši' }}
-                </button>
+          <div class="tags" *ngIf="v.tags && v.tags.length">
+            <span class="tag" *ngFor="let t of v.tags">#{{ t }}</span>
+          </div>
+
+          <div class="meta-row">
+            <!-- LEVO: autor -->
+            <div class="author">
+              <div
+                class="avatar clickable"
+                (click)="openUser(v.userId, $event)"
+                role="link"
+                tabindex="0"
+                (keydown.enter)="openUser(v.userId, $event)"
+              >
+                {{ (v.username ?? '?').slice(0, 1).toUpperCase() }}
               </div>
 
-              <div class="state warn mini" *ngIf="postError">{{ postError }}</div>
+              <div class="author-text">
+                <div
+                  class="username clickable"
+                  (click)="openUser(v.userId, $event)"
+                  role="link"
+                  tabindex="0"
+                  (keydown.enter)="openUser(v.userId, $event)"
+                >
+                  {{ v.username ?? 'Nepoznat autor' }}
+                </div>
+
+                <div class="time">{{ formatTime(v.createdAt) }}</div>
+
+                <div class="location" *ngIf="v.location && v.location.trim()">{{ v.location }}</div>
+              </div>
+            </div>
+
+            <!-- DESNO: stats -->
+            <div class="stats">
+              <div class="views">{{ v.viewCount ?? 0 }} pregleda</div>
+
+              <div class="stats-chips">
+             <button
+  type="button"
+  class="chip like-chip"
+  [class.liked]="likedByMe"
+  [disabled]="!isLoggedIn() || likeBusy"
+  (click)="toggleLike($event)"
+>
+  <span class="icon">{{ likedByMe ? '❤️' : '👍' }}</span>
+  {{ v.likeCount ?? 0 }}
+</button>
+
+
+                <span class="chip"> 💬 {{ v.commentCount ?? comments.length }} </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div *ngIf="commentsLoading" class="state">Učitavam komentare…</div>
-        <div *ngIf="!commentsLoading && commentsError" class="state warn">{{ commentsError }}</div>
+          <p class="desc" *ngIf="v.description">{{ v.description }}</p>
 
-        <div *ngIf="!commentsLoading && !commentsError && comments.length === 0" class="state">
-          Nema komentara još.
-        </div>
+          <!-- KOMENTARI -->
+          <section class="comments">
+            <div class="comments-head">
+              <div class="comments-title">Komentari ({{ commentsTotal || comments.length }})</div>
+            </div>
 
-        <article class="comment" *ngFor="let c of comments">
-          <div
-            class="c-avatar clickable"
-            (click)="openUser(c.userId, $event)"
-            role="link"
-            tabindex="0"
-            (keydown.enter)="openUser(c.userId, $event)"
-          >
-            {{ (c.username ?? '?').slice(0, 1).toUpperCase() }}
-          </div>
+            <!-- DODAJ KOMENTAR -->
+            <div class="comment-compose" *ngIf="video as v">
+              <div class="compose-row">
+                <div class="c-avatar me">
+                  {{ (currentUsername ?? '?').slice(0, 1).toUpperCase() }}
+                </div>
 
-          <div class="c-body">
-            <div class="c-head">
-              <span
-                class="c-user clickable"
+                <div class="compose-box">
+                  <textarea
+                    class="compose-input"
+                    rows="1"
+                    [value]="newComment"
+                    (input)="onCommentInput($event)"
+                    placeholder="Dodaj komentar…"
+                    [disabled]="postingComment"
+                  ></textarea>
+
+                  <div class="compose-actions" *ngIf="newComment.trim().length > 0 || composeFocused">
+                    <button
+                      type="button"
+                      class="btn ghost"
+                      (click)="cancelComment()"
+                      [disabled]="postingComment"
+                    >
+                      Otkaži
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn primary"
+                      (click)="postComment()"
+                      [disabled]="postingComment || !newComment.trim()"
+                    >
+                      {{ postingComment ? 'Šaljem…' : 'Komentariši' }}
+                    </button>
+                  </div>
+
+                  <div class="state warn mini" *ngIf="postError">{{ postError }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="commentsLoading" class="state">Učitavam komentare…</div>
+            <div *ngIf="!commentsLoading && commentsError" class="state warn">{{ commentsError }}</div>
+
+            <div *ngIf="!commentsLoading && !commentsError && comments.length === 0" class="state">
+              Nema komentara još.
+            </div>
+
+            <article class="comment" *ngFor="let c of comments">
+              <div
+                class="c-avatar clickable"
                 (click)="openUser(c.userId, $event)"
                 role="link"
                 tabindex="0"
                 (keydown.enter)="openUser(c.userId, $event)"
               >
-                {{ c.username }}
-              </span>
-              <span class="dot">•</span>
-              <span class="c-time">{{ formatTime(c.createdAt) }}</span>
+                {{ (c.username ?? '?').slice(0, 1).toUpperCase() }}
+              </div>
+
+              <div class="c-body">
+                <div class="c-head">
+                  <span
+                    class="c-user clickable"
+                    (click)="openUser(c.userId, $event)"
+                    role="link"
+                    tabindex="0"
+                    (keydown.enter)="openUser(c.userId, $event)"
+                  >
+                    {{ c.username }}
+                  </span>
+                  <span class="dot">•</span>
+                  <span class="c-time">{{ formatTime(c.createdAt) }}</span>
+                </div>
+                <div class="c-text">{{ c.text }}</div>
+              </div>
+            </article>
+
+            <div
+              class="load-more"
+              *ngIf="!commentsLoading && !commentsError && comments.length > 0 && !commentsLast"
+            >
+              <button class="btn ghost" (click)="loadMoreComments()" [disabled]="loadingMore">
+                {{ loadingMore ? 'Učitavam…' : 'Učitaj još' }}
+              </button>
             </div>
-            <div class="c-text">{{ c.text }}</div>
-          </div>
-        </article>
-        <div
-          class="load-more"
-          *ngIf="!commentsLoading && !commentsError && comments.length > 0 && !commentsLast"
-        >
-          <button class="btn ghost" (click)="loadMoreComments()" [disabled]="loadingMore">
-            {{ loadingMore ? 'Učitavam…' : 'Učitaj još' }}
-          </button>
-        </div>
+          </section>
+        </ng-container>
       </section>
-    </ng-container>
+
+      <!-- ================= RIGHT (sidebar) ================= -->
+      <aside class="side-col">
+        <div class="side-title">Ostali videi</div>
+
+        <div *ngIf="sideLoading" class="state mini">Učitavam…</div>
+        <div *ngIf="!sideLoading && sideError" class="state warn mini">{{ sideError }}</div>
+
+        <a
+          class="side-item"
+          *ngFor="let it of sideVideos"
+          [routerLink]="['/watch', it.id]"
+        >
+          <!-- ⚠️ ako ti se metoda zove drugačije, promeni samo ovu liniju -->
+          <img class="thumb" [src]="videoService.thumbnailUrl(it.id)" alt="" loading="lazy" />
+
+          <div class="side-meta">
+            <div class="side-item-title">{{ it.title }}</div>
+            <div class="side-item-sub">
+              <span class="muted">{{ it.username ?? 'Nepoznat autor' }}</span>
+              <span class="dot">•</span>
+              <span class="muted">👁️ {{ it.viewCount ?? 0 }}</span>
+            </div>
+          </div>
+        </a>
+      </aside>
+    </div>
   </main>
 </div>

@@ -15,6 +15,7 @@
   padding: 0 16px;
   background: #0f0f0f;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  justify-content: space-between;
 }
 
 .brand {
@@ -41,6 +42,14 @@
   font-weight: 800;
 }
 
+/* top actions (desno u topbaru) */
+.top-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 /* states */
 .state {
   padding: 18px 16px;
@@ -49,12 +58,113 @@
 .state.error {
   color: #ff6b6b;
 }
+.state.warn {
+  color: rgba(255, 255, 255, 0.75);
+}
+.state.mini {
+  padding: 8px 0 0;
+  font-size: 12px;
+}
 
 /* content */
 .content {
-  max-width: 980px;
+  max-width: 1220px; /* malo šire zbog sidebar-a */
   margin: 0 auto;
   padding: 24px 16px 40px;
+}
+
+/* ===== layout: left + right (YT) ===== */
+.watch-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .watch-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .side-col {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+.main-col {
+  min-width: 0;
+}
+
+/* right column */
+.side-col {
+  position: sticky;
+  top: 72px; /* ispod topbara */
+  max-height: calc(100vh - 90px);
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.side-title {
+  font-weight: 800;
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.side-item {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 10px;
+}
+
+.side-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.thumb {
+  width: 100%;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #000;
+}
+
+.side-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.side-item-title {
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.side-item-sub {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.muted {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* player */
@@ -72,24 +182,18 @@
 }
 
 /* meta */
-.meta {
-  display: grid;
-  gap: 14px;
-}
-
 .title {
   font-size: 20px;
   font-weight: 800;
   line-height: 1.3;
 }
 
-/* author row */
-.sub {
+.meta-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 14px;
+  margin-top: 12px;
   flex-wrap: wrap;
-  gap: 12px;
 }
 
 .author {
@@ -109,26 +213,13 @@
   font-weight: 800;
 }
 
-.author-text .username {
-  font-weight: 700;
-}
-
-.author-text .time {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.meta-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-
 .author-text {
   display: grid;
   gap: 2px;
+}
+
+.username {
+  font-weight: 700;
 }
 
 .time {
@@ -154,24 +245,23 @@
   color: rgba(255, 255, 255, 0.78);
 }
 
-.author {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-/* ⬅️ OVO gura stats skroz desno */
+/* stats (desno od author) */
 .stats {
   margin-left: auto;
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
 }
 
-/* stats */
-.stats {
+.views {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.stats-chips {
   display: flex;
   gap: 8px;
-  margin-left: auto;
 }
 
 .chip {
@@ -182,17 +272,14 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* description */
-.description {
+.desc {
+  margin-top: 12px;
   color: rgba(255, 255, 255, 0.85);
   font-size: 14px;
   line-height: 1.5;
 }
 
-.state.warn {
-  color: rgba(255, 255, 255, 0.75);
-}
-
+/* comments */
 .comments {
   margin-top: 22px;
   padding-top: 18px;
@@ -246,45 +333,22 @@
   opacity: 0.6;
 }
 
-.author.clickable {
-  cursor: pointer;
-}
-.author.clickable:hover {
-  text-decoration: underline;
-}
-
-.c-user.clickable {
-  cursor: pointer;
-}
-.c-user.clickable:hover {
-  text-decoration: underline;
-}
-
 /* univerzalno klikabilno */
 .clickable {
   cursor: pointer;
 }
 
-/* da se vidi hover (na tekst) */
-.clickable:hover .username,
-.clickable:hover .c-user {
+.username.clickable:hover,
+.c-user.clickable:hover {
   text-decoration: underline;
 }
 
-/* avatar hover efekat (da se vidi da je klikabilan) */
 .avatar.clickable:hover,
 .c-avatar.clickable:hover {
   filter: brightness(1.15);
 }
 
-.username.clickable {
-  cursor: pointer;
-}
-.username.clickable:hover {
-  text-decoration: underline;
-}
-
-/* compose (add comment) */
+/* compose */
 .comment-compose {
   margin: 6px 0 14px;
 }
@@ -329,49 +393,7 @@
   padding-top: 10px;
 }
 
-.btn {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.92);
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.btn.ghost {
-  background: transparent;
-}
-
-.btn.primary {
-  background: #ff0033;
-  border-color: rgba(255, 0, 51, 0.55);
-}
-
-.state.mini {
-  padding: 8px 0 0;
-  font-size: 12px;
-}
-
-/* top actions (desno u topbaru) */
-.topbar {
-  justify-content: space-between;
-}
-
-.top-actions {
-  margin-left: auto;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-/* dugmad kao na home */
+/* buttons */
 .btn {
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.06);
@@ -402,22 +424,57 @@
   justify-content: center;
   padding: 12px 0 0;
 }
+/* Like chip — jasno stanje */
+/* ================== LIKE – JASNO STANJE ================== */
 
-.stats {
-  margin-left: auto;
-  display: flex;
-  flex-direction: column; /* ⬅️ pregledi iznad */
-  align-items: flex-end;
+.like-chip {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease;
 }
 
-.views {
-  font-size: 13px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.85);
+/* ❌ nije lajkovano */
+.like-chip:not(.liked) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.stats-chips {
-  display: flex;
-  gap: 8px;
+/* ✅ LAJKOVANO – CRVENO + GLOW */
+.like-chip.liked {
+  background: #ff0033;
+  border-color: #ff0033;
+  color: #fff;
+
+  /* glow efekat */
+  box-shadow:
+    0 0 0 2px rgba(255, 0, 51, 0.35),
+    0 6px 16px rgba(255, 0, 51, 0.35);
+}
+
+/* hover samo kad je aktivno */
+.like-chip.liked:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.03);
+}
+
+/* klik */
+.like-chip:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* ikonica */
+.like-chip .icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.like-warning {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #ff6b6b;
+  font-weight: 600;
 }
