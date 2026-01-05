@@ -253,3 +253,122 @@
 .username.clickable:hover {
   text-decoration: underline;
 }
+
+/* compose (add comment) */
+.comment-compose {
+  margin: 6px 0 14px;
+}
+
+.compose-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.c-avatar.me {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.compose-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.compose-input {
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.compose-input:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.45);
+}
+
+.compose-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.btn.primary {
+  background: #ff0033;
+  border-color: rgba(255, 0, 51, 0.55);
+}
+
+.state.mini {
+  padding: 8px 0 0;
+  font-size: 12px;
+}
+
+/* top actions (desno u topbaru) */
+.topbar {
+  justify-content: space-between;
+}
+
+.top-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* dugmad kao na home */
+.btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.btn.primary {
+  background: #ff0033;
+  border-color: rgba(255, 0, 51, 0.55);
+}
+
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 0;
+}

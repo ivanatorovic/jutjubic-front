@@ -1,9 +1,33 @@
 <div class="page">
   <header class="topbar">
-    <a class="brand" routerLink="/videos">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
       <span class="logo">▶</span>
       <span class="name">jutjubic</span>
     </a>
+
+    <!-- DESNO -->
+    <div class="top-actions">
+      <!-- ako nije ulogovan -->
+      <ng-container *ngIf="!isLoggedIn(); else logged">
+        <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
+        <button type="button" class="btn primary" routerLink="/register">Registracija</button>
+      </ng-container>
+
+      <!-- ako jeste ulogovan -->
+      <ng-template #logged>
+        <button class="btn ghost" routerLink="/upload">Upload</button>
+
+        <button
+          class="btn ghost"
+          *ngIf="currentUserId !== null"
+          [routerLink]="['/user-profile', currentUserId]"
+        >
+          Profil
+        </button>
+
+        <button class="btn primary" (click)="logout()">Logout</button>
+      </ng-template>
+    </div>
   </header>
 
   <main class="content">
@@ -49,16 +73,16 @@
             <div class="time">{{ formatTime(v.createdAt) }}</div>
           </div>
         </div>
-<div class="extra" *ngIf="(v.location && v.location.trim()) || (v.tags && v.tags.length)">
-  <span class="chip" *ngIf="v.location && v.location.trim()">📍 {{ v.location }}</span>
+        <div class="extra" *ngIf="(v.location && v.location.trim()) || (v.tags && v.tags.length)">
+          <span class="chip" *ngIf="v.location && v.location.trim()">📍 {{ v.location }}</span>
 
-  <ng-container *ngIf="v.tags && v.tags.length">
-    <span class="chip tag" *ngFor="let t of v.tags">#{{ t }}</span>
-  </ng-container>
-</div>
+          <ng-container *ngIf="v.tags && v.tags.length">
+            <span class="chip tag" *ngFor="let t of v.tags">#{{ t }}</span>
+          </ng-container>
+        </div>
         <!-- DESNO: stats -->
         <div class="stats">
-           <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
+          <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
           <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
           <span class="chip">💬 {{ v.commentCount ?? comments.length }}</span>
         </div>
@@ -69,7 +93,49 @@
       <!-- KOMENTARI -->
       <section class="comments">
         <div class="comments-head">
-          <div class="comments-title">Komentari ({{ comments.length }})</div>
+          <div class="comments-title">Komentari ({{ commentsTotal || comments.length }})</div>
+        </div>
+
+        <!-- DODAJ KOMENTAR -->
+        <div class="comment-compose" *ngIf="video as v">
+          <div class="compose-row">
+            <div class="c-avatar me">
+              {{ (currentUsername ?? '?').slice(0, 1).toUpperCase() }}
+            </div>
+
+            <div class="compose-box">
+              <textarea
+                class="compose-input"
+                rows="1"
+                [value]="newComment"
+                (input)="onCommentInput($event)"
+                placeholder="Dodaj komentar…"
+                [disabled]="postingComment"
+              ></textarea>
+
+              <div class="compose-actions" *ngIf="newComment.trim().length > 0 || composeFocused">
+                <button
+                  type="button"
+                  class="btn ghost"
+                  (click)="cancelComment()"
+                  [disabled]="postingComment"
+                >
+                  Otkaži
+                </button>
+
+                <button
+                  type="button"
+                  class="btn primary"
+                  (click)="postComment()"
+                  [disabled]="postingComment || !newComment.trim()"
+                >
+                  {{ postingComment ? 'Šaljem…' : 'Komentariši' }}
+                </button>
+              </div>
+
+              <div class="state warn mini" *ngIf="postError">{{ postError }}</div>
+            </div>
+          </div>
         </div>
 
         <div *ngIf="commentsLoading" class="state">Učitavam komentare…</div>
@@ -107,6 +173,14 @@
             <div class="c-text">{{ c.text }}</div>
           </div>
         </article>
+        <div
+          class="load-more"
+          *ngIf="!commentsLoading && !commentsError && comments.length > 0 && !commentsLast"
+        >
+          <button class="btn ghost" (click)="loadMoreComments()" [disabled]="loadingMore">
+            {{ loadingMore ? 'Učitavam…' : 'Učitaj još' }}
+          </button>
+        </div>
       </section>
     </ng-container>
   </main>
