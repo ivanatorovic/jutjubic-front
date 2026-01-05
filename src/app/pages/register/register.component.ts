@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth-service/auth.service';
+import { finalize, timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -67,11 +68,12 @@ export class RegisterComponent {
       address: this.form.address.trim(),
       password: this.form.password,
       confirmPassword: this.form.confirmPassword
-    }).subscribe({
+    }) 
+  .subscribe({
       next: () => {
         // 3) uspešno — link poslat
         this.success = 'Proverite mejl i kliknite na link u poruci.';
-        this.loading = false;
+
       },
       error: (err) => {
         this.loading = false;

@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { CommentPublicDto, Video, VideoService } from '../../services/video-service/video';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth-service/auth.service';
 
 @Component({
   selector: 'app-watch',
@@ -25,6 +26,9 @@ export class WatchComponent implements OnInit, OnDestroy {
   comments: CommentPublicDto[] = [];
   commentsLoading = false;
   commentsError = '';
+  likedByMe = false;
+  likeBusy = false;
+
 
   private destroy$ = new Subject<void>();
 
@@ -32,7 +36,8 @@ export class WatchComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public videoService: VideoService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +68,19 @@ export class WatchComponent implements OnInit, OnDestroy {
       next: (v) => {
         this.video = v;
         this.metaLoading = false;
+        this.likedByMe = false;
+if (this.auth.isLoggedIn()) {
+  this.videoService.isLiked(id).subscribe({
+    next: (liked) => {
+      this.likedByMe = liked;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.likedByMe = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -118,4 +136,43 @@ export class WatchComponent implements OnInit, OnDestroy {
     if (!userId) return;
     this.router.navigate(['/user-profile', userId]);
   }
+
+  toggleLike(ev?: Event) {
+  ev?.stopPropagation();
+  ev?.preventDefault();
+
+  // samo ulogovani korisnici
+  if (!this.auth.isLoggedIn()) {
+    this.router.navigate(['/login']);
+    return;
+  }
+
+  if (!this.video || !this.id) return;
+  if (this.likeBusy) return;
+
+  this.likeBusy = true;
+
+  const req$ = this.likedByMe
+    ? this.videoService.unlike(this.id)
+    : this.videoService.like(this.id);
+
+  req$.subscribe({
+    next: (newCount) => {
+      this.video!.likeCount = Number(newCount ?? this.video!.likeCount ?? 0);
+      this.likedByMe = !this.likedByMe;
+      this.likeBusy = false;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.likeBusy = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+isLoggedIn(): boolean {
+  return this.auth.isLoggedIn();
+}
+
+
 }

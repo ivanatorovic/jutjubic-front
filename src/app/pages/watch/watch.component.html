@@ -59,7 +59,15 @@
         <!-- DESNO: stats -->
         <div class="stats">
            <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
-          <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
+         <button
+  type="button"
+  class="chip like-chip"
+  [disabled]="!isLoggedIn() || likeBusy"
+  (click)="toggleLike($event)"
+>
+  👍 {{ v.likeCount ?? 0 }}
+</button>
+
           <span class="chip">💬 {{ v.commentCount ?? comments.length }}</span>
         </div>
       </div>

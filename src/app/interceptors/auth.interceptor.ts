@@ -3,30 +3,44 @@ import {
   HttpInterceptor,
   HttpRequest,
   HttpHandler,
-  HttpEvent
+  HttpEvent,
+  HttpErrorResponse
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth-service/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.auth.getToken(); // ✅ koristi tvoj key access_token
 
-    // (opciono) ne dodaj token na login/register
-    if (req.url.includes('/api/auth/login') || req.url.includes('/api/auth/register')) {
-      return next.handle(req);
-    }
+    // ✅ auth endpoints - ne diraj ni token ni auto-logout
+    const isAuthEndpoint =
+      req.url.includes('/api/auth/login') ||
+      req.url.includes('/api/auth/register') ||
+      req.url.includes('/api/auth/activate');
 
-    if (!token) return next.handle(req);
+    const token = this.auth.getToken();
 
-    const authReq = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
-    });
+    const authReq =
+      !isAuthEndpoint && token
+        ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+        : req;
 
-    return next.handle(authReq);
+    return next.handle(authReq).pipe(
+      catchError((err: HttpErrorResponse) => {
+
+        // ✅ Auto logout samo za NE-auth pozive
+        if (!isAuthEndpoint && err.status === 401) {
+          this.auth.logout();
+          this.router.navigate(['/videos']);
+        }
+
+        return throwError(() => err);
+      })
+    );
   }
 }

@@ -68,4 +68,17 @@ export class VideoService {
       `${environment.apiUrl}/api/videos/${id}/comments`
     );
   }
+
+  like(videoId: number) {
+  return this.http.post<number>(`${environment.apiUrl}/api/videos/${videoId}/like`, {});
+}
+
+unlike(videoId: number) {
+  return this.http.delete<number>(`${environment.apiUrl}/api/videos/${videoId}/like`);
+}
+
+isLiked(videoId: number) {
+  return this.http.get<boolean>(`${environment.apiUrl}/api/videos/${videoId}/like`);
+}
+
 }

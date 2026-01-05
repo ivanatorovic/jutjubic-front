@@ -253,3 +253,22 @@
 .username.clickable:hover {
   text-decoration: underline;
 }
+
+.like-chip {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.like-chip:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.like-chip.active {
+  border-color: rgba(255, 0, 51, 0.75);
+}
+
+.like-chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
