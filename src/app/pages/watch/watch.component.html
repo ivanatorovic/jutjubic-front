@@ -47,6 +47,10 @@
     <ng-container *ngIf="video as v">
       <h1 class="title">{{ v.title }}</h1>
 
+      <div class="tags" *ngIf="v.tags && v.tags.length">
+        <span class="tag" *ngFor="let t of v.tags">#{{ t }}</span>
+      </div>
+
       <div class="meta-row">
         <!-- LEVO: autor -->
         <div class="author">
@@ -60,7 +64,7 @@
             {{ (v.username ?? '?').slice(0, 1).toUpperCase() }}
           </div>
 
-          <div>
+          <div class="author-text">
             <div
               class="username clickable"
               (click)="openUser(v.userId, $event)"
@@ -70,30 +74,30 @@
             >
               {{ v.username ?? 'Nepoznat autor' }}
             </div>
-            <div class="time">{{ formatTime(v.createdAt) }}</div>
-          </div>
-        </div>
-        <div class="extra" *ngIf="(v.location && v.location.trim()) || (v.tags && v.tags.length)">
-          <span class="chip" *ngIf="v.location && v.location.trim()">📍 {{ v.location }}</span>
 
-          <ng-container *ngIf="v.tags && v.tags.length">
-            <span class="chip tag" *ngFor="let t of v.tags">#{{ t }}</span>
-          </ng-container>
+            <div class="time">{{ formatTime(v.createdAt) }}</div>
+
+            <div class="location" *ngIf="v.location && v.location.trim()">{{ v.location }}</div>
+          </div>
         </div>
         <!-- DESNO: stats -->
         <div class="stats">
-           <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
-                  <button
-  type="button"
-  class="chip like-chip"
-  [disabled]="!isLoggedIn() || likeBusy"
-  (click)="toggleLike($event)"
->
-  👍 {{ v.likeCount ?? 0 }}
-</button>
+          <!-- 👁️ uklonjeno, samo tekst -->
+          <div class="views">{{ v.viewCount ?? 0 }} pregleda</div>
 
-    
-          <span class="chip">💬 {{ v.commentCount ?? comments.length }}</span>
+          <!-- chipovi ostaju -->
+          <div class="stats-chips">
+            <button
+              type="button"
+              class="chip like-chip"
+              [disabled]="!isLoggedIn() || likeBusy"
+              (click)="toggleLike($event)"
+            >
+              👍 {{ v.likeCount ?? 0 }}
+            </button>
+
+            <span class="chip"> 💬 {{ v.commentCount ?? comments.length }} </span>
+          </div>
         </div>
       </div>
 

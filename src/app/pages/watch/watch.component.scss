@@ -121,7 +121,37 @@
 .meta-row {
   display: flex;
   align-items: center;
+  gap: 14px;
   margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.author-text {
+  display: grid;
+  gap: 2px;
+}
+
+.time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.location {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .author {
@@ -371,4 +401,23 @@
   display: flex;
   justify-content: center;
   padding: 12px 0 0;
+}
+
+.stats {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column; /* ⬅️ pregledi iznad */
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.views {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stats-chips {
+  display: flex;
+  gap: 8px;
 }

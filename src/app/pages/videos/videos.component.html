@@ -1,51 +1,41 @@
 <div class="page">
   <!-- Top bar -->
   <header class="topbar">
-  <a class="brand" routerLink="/videos" aria-label="jutjubic home">
-    <span class="logo">▶</span>
-    <span class="name">jutjubic</span>
-  </a>
-  <!-- ✅ UPLOAD PROGRESS BANNER -->
-<!-- UPLOAD PROGRESS BANNER -->
-<div class="upload-banner" *ngIf="uploadState.status !== 'idle'">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+    <!-- ✅ UPLOAD PROGRESS BANNER -->
+    <!-- UPLOAD PROGRESS BANNER -->
+    <div class="upload-banner" *ngIf="uploadState.status !== 'idle'">
+      <!-- UPLOADING -->
+      <div *ngIf="uploadState.status === 'uploading'" class="ub-row">
+        <span class="ub-text"> Upload u toku… {{ uploadState.progress }}% </span>
+        <div class="ub-progress">
+          <div class="ub-bar" [style.width.%]="uploadState.progress"></div>
+        </div>
+      </div>
 
-  <!-- UPLOADING -->
-  <div *ngIf="uploadState.status === 'uploading'" class="ub-row">
-    <span class="ub-text">
-      Upload u toku… {{ uploadState.progress }}%
-    </span>
-    <div class="ub-progress">
-      <div
-        class="ub-bar"
-        [style.width.%]="uploadState.progress">
+      <!-- DONE -->
+      <div *ngIf="uploadState.status === 'done'" class="ub-row ok">
+        <span class="ub-text">Upload završen ✅</span>
+        <div class="ub-progress">
+          <div class="ub-bar" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div *ngIf="uploadState.status === 'error'" class="ub-row bad">
+        <span class="ub-text"> Upload neuspešan ❌ {{ uploadState.message }} </span>
       </div>
     </div>
-  </div>
-
-  <!-- DONE -->
-  <div *ngIf="uploadState.status === 'done'" class="ub-row ok">
-    <span class="ub-text">Upload završen ✅</span>
-    <div class="ub-progress">
-      <div class="ub-bar" style="width: 100%"></div>
-    </div>
-  </div>
-
-  <!-- ERROR -->
-  <div *ngIf="uploadState.status === 'error'" class="ub-row bad">
-    <span class="ub-text">
-      Upload neuspešan ❌ {{ uploadState.message }}
-    </span>
-  </div>
-
-</div>
 
     <!-- DESNO -->
     <div class="top-actions">
       <!-- ako nije ulogovan -->
       <ng-container *ngIf="!isLoggedIn(); else logged">
-      <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
-      <button type="button" class="btn primary" routerLink="/register">Registracija</button>
-
+        <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
+        <button type="button" class="btn primary" routerLink="/register">Registracija</button>
       </ng-container>
 
       <!-- ako jeste ulogovan -->
@@ -79,24 +69,11 @@
       (keydown.enter)="openWatch(v.id)"
       (keydown.space)="openWatch(v.id)"
     >
-   <div
-  class="thumb-wrap"
-  
->
-  <img
-    class="thumb"
-    [src]="videoService.thumbnailUrl(v.id)"
-    alt="thumbnail"
-  />
+      <div class="thumb-wrap">
+        <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
 
-  
-
-  <div class="play-overlay">▶</div>
-
-  <div class="badge" *ngIf="v.location">📍 {{ v.location }}</div>
-</div>
-
-
+        <div class="play-overlay">▶</div>
+      </div>
 
       <div class="info">
         <div class="title" [title]="v.title">{{ v.title }}</div>
@@ -117,18 +94,17 @@
 
           <span class="dot">•</span>
           <span class="time">{{ formatTime(v.createdAt) }}</span>
+          <div class="location" *ngIf="v.location && v.location.trim()">📍 {{ v.location }}</div>
         </div>
 
         <div class="stats">
-           <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
+          <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
           <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
           <span class="chip">💬 {{ v.commentCount ?? 0 }}</span>
         </div>
       </div>
     </article>
 
-    <div *ngIf="videos.length === 0" class="state">
-      Nema videa još.
-    </div>
+    <div *ngIf="videos.length === 0" class="state">Nema videa još.</div>
   </div>
 </div>

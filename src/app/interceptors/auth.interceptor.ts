@@ -4,7 +4,7 @@ import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
-  HttpErrorResponse
+  HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -16,7 +16,6 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private auth: AuthService, private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-
     // ✅ auth endpoints - ne diraj ni token ni auto-logout
     const isAuthEndpoint =
       req.url.includes('/api/auth/login') ||
@@ -32,11 +31,16 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
-
-        // ✅ Auto logout samo za NE-auth pozive
         if (!isAuthEndpoint && err.status === 401) {
-          this.auth.logout();
-          this.router.navigate(['/videos']);
+          const hasToken = !!this.auth.getToken();
+
+          // ✅ token je postojao => istekao/loš => logout + redirect
+          if (hasToken) {
+            this.auth.logout();
+            this.router.navigate(['/videos']); // ili '/login'
+          }
+
+          // ✅ nema tokena => korisnik nije ulogovan => NE redirect
         }
 
         return throwError(() => err);
