@@ -21,14 +21,21 @@
       <label>Lozinka</label>
       <input type="password" [(ngModel)]="password" />
 
-      <button
-        type="button"
-        class="btn primary full"
-        (click)="login()"
-        [disabled]="loading"
-      >
-        {{ loading ? 'Prijavljivanje...' : 'Uloguj se' }}
-      </button>
+     <button
+  type="button"
+  class="btn primary full"
+  (click)="login()"
+  [disabled]="loading || locked"
+>
+  {{
+    loading
+      ? 'Prijavljivanje...'
+      : locked
+        ? ('Sačekajte ' + lockSeconds + 's')
+        : 'Uloguj se'
+  }}
+</button>
+
 
       <p class="error" *ngIf="error">{{ error }}</p>
       <p class="success" *ngIf="success">{{ success }}</p>

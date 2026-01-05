@@ -42,11 +42,18 @@
         (click)="register()"
         [disabled]="loading"
       >
-        {{ loading ? 'Slanje...' : 'Registruj se' }}
+        {{ loading ? 'Link je poslat! Proverite mejl radi zavrsetka registracije' : 'Registruj se' }}
       </button>
 
-      <p class="error" *ngIf="error">{{ error }}</p>
-      <p class="success" *ngIf="success">{{ success }}</p>
+  
+
+<div class="form-message"
+     *ngIf="error || success"
+     [class.error]="!!error"
+     [class.success]="!!success">
+  {{ error || success }}
+</div>
+
 
       <p class="hint">
         Već imaš nalog?
