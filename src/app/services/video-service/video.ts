@@ -19,7 +19,7 @@ export interface Video {
   commentCount?: number;
   createdAt?: string; // ISO string
   location?: string;
-   viewCount?: number;
+  viewCount?: number;
 }
 
 export interface CommentPublicDto {
@@ -29,6 +29,15 @@ export interface CommentPublicDto {
   username: string;
   createdAt: string; // ISO
 }
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // current page (0-based)
+  size: number;
+  first: boolean;
+  last: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class VideoService {
@@ -36,6 +45,12 @@ export class VideoService {
 
   getAll() {
     return this.http.get<Video[]>(`${environment.apiUrl}/api/videos`);
+  }
+
+  getCommentsPaged(id: number, page: number, size: number) {
+    return this.http.get<PageResponse<CommentPublicDto>>(
+      `${environment.apiUrl}/api/videos/${id}/comments?page=${page}&size=${size}`
+    );
   }
 
   thumbnailUrl(id: number) {
@@ -64,8 +79,13 @@ export class VideoService {
   }
 
   getComments(id: number) {
-    return this.http.get<CommentPublicDto[]>(
-      `${environment.apiUrl}/api/videos/${id}/comments`
+    return this.http.get<CommentPublicDto[]>(`${environment.apiUrl}/api/videos/${id}/comments`);
+  }
+
+  addComment(videoId: number, text: string) {
+    return this.http.post<CommentPublicDto>(
+      `${environment.apiUrl}/api/videos/${videoId}/comments`,
+      { text }
     );
   }
 
