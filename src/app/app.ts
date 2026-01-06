@@ -15,7 +15,11 @@ export class App {
     constructor(private auth: AuthService) {}
 
   ngOnInit(): void {
-    // ✅ UVEK izloguj korisnika pri pokretanju aplikacije
-    this.auth.logout();
+    // ✅ ostani ulogovan posle reload-a ako token postoji i nije istekao
+    if (!this.auth.isLoggedIn()) {
+      // token ne postoji ili je istekao -> očisti storage
+      this.auth.logout();
+      // ne moraš ništa da redirectuješ ovde
+    }
   }
 }

@@ -93,16 +93,20 @@
   type="button"
   class="chip like-chip"
   [class.liked]="likedByMe"
-  [disabled]="!isLoggedIn() || likeBusy"
+  [disabled]="likeBusy"
   (click)="toggleLike($event)"
 >
-  <span class="icon">{{ likedByMe ? '❤️' : '👍' }}</span>
+<span class="icon">👍</span>
   {{ v.likeCount ?? 0 }}
 </button>
 
 
+
                 <span class="chip"> 💬 {{ v.commentCount ?? comments.length }} </span>
               </div>
+                <div class="like-warning" *ngIf="likeAuthError">
+    Moraš biti ulogovan da lajkuješ.
+  </div>
             </div>
           </div>
 

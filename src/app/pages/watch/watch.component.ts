@@ -324,17 +324,20 @@ likeAuthError = false;
   ev?.preventDefault();
 
   // ❌ NIJE ULOGOVAN
-  if (!this.auth.isLoggedIn()) {
+
+if (!this.auth.isLoggedIn()) {
+  // “restart” poruke na svaki klik
+  this.likeAuthError = false;
+  this.cdr.detectChanges();
+
+ setTimeout(() => {
     this.likeAuthError = true;
+    this.cdr.detectChanges();
+  }, 0);
 
-    // sakrij poruku posle 3 sekunde
-    setTimeout(() => {
-      this.likeAuthError = false;
-      this.cdr.detectChanges();
-    }, 3000);
+  return;
+}
 
-    return;
-  }
 
   // ako je ulogovan – briši poruku
   this.likeAuthError = false;

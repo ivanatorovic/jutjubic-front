@@ -262,6 +262,8 @@
 .stats-chips {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;      /* ✅ omogući novi red */
+  align-items: center;
 }
 
 .chip {
@@ -426,55 +428,48 @@
 }
 /* Like chip — jasno stanje */
 /* ================== LIKE – JASNO STANJE ================== */
-
 .like-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 120ms ease;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
 }
 
-/* ❌ nije lajkovano */
+/* default (nije lajkovano) */
 .like-chip:not(.liked) {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* ✅ LAJKOVANO – CRVENO + GLOW */
+/* ✅ LAJKOVANO – PLAVO + GLOW */
 .like-chip.liked {
-  background: #ff0033;
-  border-color: #ff0033;
+  background: #3b82f6;          /* plavo */
+  border-color: #3b82f6;
   color: #fff;
 
-  /* glow efekat */
   box-shadow:
-    0 0 0 2px rgba(255, 0, 51, 0.35),
-    0 6px 16px rgba(255, 0, 51, 0.35);
+    0 0 0 2px rgba(59, 130, 246, 0.35),
+    0 6px 16px rgba(59, 130, 246, 0.35);
 }
 
-/* hover samo kad je aktivno */
 .like-chip.liked:hover:not(:disabled) {
   transform: translateY(-1px) scale(1.03);
 }
 
-/* klik */
 .like-chip:active:not(:disabled) {
   transform: scale(0.97);
 }
 
-/* ikonica */
 .like-chip .icon {
   font-size: 14px;
   line-height: 1;
 }
+
 .like-warning {
   margin-top: 6px;
   font-size: 12px;
   color: #ff6b6b;
   font-weight: 600;
+  text-align: right;
 }

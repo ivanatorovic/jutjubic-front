@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth-service/auth.service';
 import { finalize, timeout } from 'rxjs/operators';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-register',
@@ -27,7 +28,7 @@ export class RegisterComponent {
   success = '';
   loading = false;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private cdr: ChangeDetectorRef) {}
 
   private allFieldsFilled(): boolean {
     const f = this.form;
@@ -73,6 +74,7 @@ export class RegisterComponent {
       next: () => {
         // 3) uspešno — link poslat
         this.success = 'Proverite mejl i kliknite na link u poruci.';
+        this.cdr.detectChanges();
 
       },
       error: (err) => {
@@ -85,18 +87,22 @@ export class RegisterComponent {
           '';
 
         // 4) postoji korisnik (email/username već zauzet)
-        if (
-          msg.toLowerCase().includes('email je već zauzet') ||
-          msg.toLowerCase().includes('korisničko ime je već zauzeto') ||
-          msg.toLowerCase().includes('email je vec zauzet') ||
-          msg.toLowerCase().includes('korisnicko ime je vec zauzeto')
-        ) {
-          this.error = 'Postoji već korisnik sa ovakvim podacima.';
+        if 
+          (msg.toLowerCase().includes('email je već zauzet') ){
+              this.error = 'Postoji već korisnik sa ovakvim email-om.';
+            this.cdr.detectChanges();
+            return;
+          }
+        else if
+          (msg.toLowerCase().includes('korisničko ime je već zauzeto'))
+           this.error = 'Postoji već korisnik sa ovakvim username-om.';
+          this.cdr.detectChanges();
           return;
-        }
+        
 
         // fallback
         this.error = msg || 'Greška pri registraciji. Pokušajte ponovo.';
+         this.cdr.detectChanges();
       }
     });
   }

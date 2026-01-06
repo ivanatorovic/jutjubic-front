@@ -1,3 +1,8 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 /* page */
 .page {
   min-height: 100vh;
@@ -89,6 +94,9 @@
   padding: 18px 16px;
   display: grid;
   gap: 10px;
+
+  max-width: 100%;
+  overflow: hidden;
 }
 
 h2 {
