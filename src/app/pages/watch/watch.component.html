@@ -36,7 +36,23 @@
       <section class="main-col">
         <!-- PLAYER uvek -->
         <div class="player-wrap" *ngIf="src">
-          <video class="player" [src]="src" controls autoplay preload="metadata"></video>
+         <div class="player-wrap" *ngIf="src">
+            <div class="player-wrap" *ngIf="src">
+              <video
+                #player
+                class="player"
+                [src]="src"
+                controls
+                [muted]="true"
+                playsinline
+                preload="metadata"
+                (canplay)="tryAutoplay(player)"
+              ></video>
+            </div>
+
+          </div>
+
+
         </div>
 
         <!-- hard error (loš id) -->
@@ -90,15 +106,15 @@
 
               <div class="stats-chips">
              <button
-  type="button"
-  class="chip like-chip"
-  [class.liked]="likedByMe"
-  [disabled]="!isLoggedIn() || likeBusy"
-  (click)="toggleLike($event)"
->
-  <span class="icon">{{ likedByMe ? '❤️' : '👍' }}</span>
-  {{ v.likeCount ?? 0 }}
-</button>
+                type="button"
+                class="chip like-chip"
+                [class.liked]="likedByMe"
+                [disabled]="!isLoggedIn() || likeBusy"
+                (click)="toggleLike($event)"
+              >
+                <span class="icon">{{ likedByMe ? '❤️' : '👍' }}</span>
+                {{ v.likeCount ?? 0 }}
+              </button>
 
 
                 <span class="chip"> 💬 {{ v.commentCount ?? comments.length }} </span>

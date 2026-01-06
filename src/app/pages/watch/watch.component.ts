@@ -34,18 +34,18 @@ likeAuthError = false;
   postError = '';
   composeFocused = false;
 
-  // pagination
+  
   commentsPage = 0;
   commentsSize = 5;
   commentsTotal = 0;
   commentsLast = false;
   loadingMore = false;
 
-  // user
+  
   currentUsername: string | null = null;
   currentUserId: number | null = null;
 
-  // ✅ sidebar videi
+  
   sideVideos: Video[] = [];
   sideLoading = false;
   sideError = '';
@@ -79,7 +79,7 @@ likeAuthError = false;
       this.resetCommentsPaging();
       this.loadCommentsPage(id, true);
 
-      // ✅ učitaj desni sidebar
+      
       this.loadSideVideos(id);
 
       this.cdr.detectChanges();
@@ -121,7 +121,7 @@ likeAuthError = false;
     });
   }
 
-  // ✅ sidebar lista videa (ostali videi)
+  
   private loadSideVideos(currentId: number) {
     this.sideVideos = [];
     this.sideError = '';
@@ -132,7 +132,7 @@ likeAuthError = false;
         const all = list ?? [];
         const filtered = all.filter(v => v.id !== currentId);
 
-        // po želji ograniči broj
+        
         this.sideVideos = filtered.slice(0, 12);
 
         this.sideLoading = false;
@@ -178,7 +178,7 @@ likeAuthError = false;
     this.newComment = ta.value ?? '';
     this.composeFocused = true;
 
-    // auto-grow
+    
     ta.style.height = 'auto';
     ta.style.height = Math.min(140, ta.scrollHeight) + 'px';
   }
@@ -323,11 +323,11 @@ likeAuthError = false;
   ev?.stopPropagation();
   ev?.preventDefault();
 
-  // ❌ NIJE ULOGOVAN
+  
   if (!this.auth.isLoggedIn()) {
     this.likeAuthError = true;
 
-    // sakrij poruku posle 3 sekunde
+    
     setTimeout(() => {
       this.likeAuthError = false;
       this.cdr.detectChanges();
@@ -336,7 +336,7 @@ likeAuthError = false;
     return;
   }
 
-  // ako je ulogovan – briši poruku
+  
   this.likeAuthError = false;
 
   if (!this.video || !this.id) return;
@@ -347,7 +347,7 @@ likeAuthError = false;
   const wasLiked = this.likedByMe;
   const oldCount = Number(this.video.likeCount ?? 0);
 
-  // ✅ optimistic UI
+  
   this.likedByMe = !wasLiked;
   this.video.likeCount = oldCount + (wasLiked ? -1 : 1);
   if (this.video.likeCount < 0) this.video.likeCount = 0;
@@ -363,7 +363,7 @@ likeAuthError = false;
       this.cdr.detectChanges();
     },
     error: () => {
-      // rollback
+      
       this.likedByMe = wasLiked;
       this.video!.likeCount = oldCount;
       this.likeBusy = false;
@@ -376,4 +376,19 @@ likeAuthError = false;
   isLoggedIn(): boolean {
     return this.auth.isLoggedIn();
   }
+
+  tryAutoplay(videoEl: HTMLVideoElement) {
+  // osiguraj da je muted (autoplay pravilo)
+  videoEl.muted = true;
+
+  const p = videoEl.play();
+  if (p && typeof (p as any).catch === 'function') {
+    p.catch((e: any) => {
+      // Ako browser i dalje blokira, neće rušiti app
+      // Možeš privremeno logovati:
+      // console.log('Autoplay blocked:', e?.name);
+    });
+  }
+}
+
 }
