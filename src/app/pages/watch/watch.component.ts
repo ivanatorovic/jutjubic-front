@@ -323,19 +323,21 @@ likeAuthError = false;
   ev?.stopPropagation();
   ev?.preventDefault();
 
-  
-  if (!this.auth.isLoggedIn()) {
+   // ❌ NIJE ULOGOVAN
+
+if (!this.auth.isLoggedIn()) {
+  // “restart” poruke na svaki klik
+  this.likeAuthError = false;
+  this.cdr.detectChanges();
+
+ setTimeout(() => {
     this.likeAuthError = true;
 
-    
-    setTimeout(() => {
-      this.likeAuthError = false;
-      this.cdr.detectChanges();
-    }, 3000);
+  this.cdr.detectChanges();
+  }, 0);
 
-    return;
-  }
-
+  return;
+}
   
   this.likeAuthError = false;
 
