@@ -1,8 +1,6 @@
-<!-- upload.component.html -->
 <div class="page">
-  <!-- Top bar -->
   <header class="topbar">
-    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+    <a class="brand" routerLink="/videos">
       <span class="logo">▶</span>
       <span class="name">jutjubic</span>
     </a>
@@ -10,71 +8,81 @@
 
   <main class="content">
     <div class="card">
+      <!-- HEADER -->
       <div class="header">
-        <div>
+        <div class="header-text">
           <h1>Upload videa</h1>
           <p>Naslov, opis, tagovi, lokacija i fajlovi.</p>
         </div>
 
-        <button
-          class="btn primary big"
-          (click)="upload()"
-          [disabled]="
-            uploading ||
-            !thumbnailFile ||
-            !videoFile ||
-            !title.trim() ||
-            !description.trim() ||
-            !tags.trim()
-          "
-        >
-          <span *ngIf="!uploading">Upload</span>
-          <span *ngIf="uploading" class="spin"></span>
-          <span *ngIf="uploading">Uploading…</span>
-        </button>
+        <div
+  class="upload-wrap"
+  [class.disabled]="
+    uploading ||
+    !thumbnailFile ||
+    !videoFile ||
+    !title.trim() ||
+    !description.trim() ||
+    !tags.trim()
+  "
+>
+  <button
+    class="btn primary upload-btn"
+    type="button"
+    (click)="upload()"
+    [disabled]="
+      uploading ||
+      !thumbnailFile ||
+      !videoFile ||
+      !title.trim() ||
+      !description.trim() ||
+      !tags.trim()
+    "
+  >
+    <span *ngIf="!uploading">Upload</span>
+    <span *ngIf="uploading" class="spin"></span>
+    <span *ngIf="uploading">Uploading…</span>
+  </button>
+
+  <div class="tooltip">
+    Popuni sva obavezna polja (naslov, opis, tagovi, thumbnail i video).
+  </div>
+</div>
+
       </div>
 
+      <!-- BODY -->
       <div class="grid">
-        <!-- LEVO -->
+        <!-- LEFT -->
         <section class="panel">
           <div class="field">
             <label>Naslov</label>
-            <input [(ngModel)]="title" type="text" placeholder="npr. Moj prvi video" />
+            <input [(ngModel)]="title" />
           </div>
 
           <div class="field">
             <label>Opis</label>
-            <textarea [(ngModel)]="description" placeholder="Kratak opis videa..."></textarea>
+            <textarea [(ngModel)]="description"></textarea>
           </div>
 
           <div class="grid-2">
             <div class="field">
               <label>Lokacija</label>
-              <input [(ngModel)]="location" type="text" placeholder="npr. Novi Sad" />
+              <input [(ngModel)]="location" />
             </div>
 
             <div class="field">
               <label>Tagovi</label>
-              <input [(ngModel)]="tags" type="text" placeholder="npr. fun, vlog, isa" />
-
-              <div class="hint">
-                Primer: <span class="chip">#fun</span> <span class="chip">#vlog</span>
-              </div>
+              <input [(ngModel)]="tags" />
 
               <div class="tags-preview" *ngIf="tagsList().length">
                 <span class="tchip" *ngFor="let t of tagsList()">{{ t }}</span>
               </div>
             </div>
           </div>
-
-          <div class="status-line" *ngIf="msg">
-            <span class="status" [class.ok]="msg.includes('✅')" [class.bad]="msg.includes('❌')">
-              {{ msg }}
-            </span>
-          </div>
         </section>
 
-        <!-- DESNO -->
+        <!-- RIGHT -->
         <section class="panel files">
           <!-- THUMB -->
           <div class="file-card">
@@ -86,36 +94,39 @@
 
               <input
                 #thumbInput
-                class="hidden-input"
                 type="file"
                 accept="image/*"
+                hidden
                 (change)="onThumbnailChange($event)"
               />
-              <button class="pick" type="button" (click)="thumbInput.click()">
-                Izaberi
-              </button>
+              <button class="pick" (click)="thumbInput.click()">Izaberi</button>
             </div>
 
-            <div class="file-name" [class.muted]="!thumbnailFile">
-              {{ thumbnailFile?.name || 'Nije izabrano' }}
+           <div class="file-meta">
+  <span class="file-name">
+    {{ thumbnailFile?.name || 'Nije izabrano' }}
+  </span>
+
+  <button
+    *ngIf="thumbnailFile"
+    type="button"
+    class="mini-x"
+    (click)="clearThumb($event)"
+  >
+    ✕
+  </button>
+</div>
+
+
+            <div class="thumb-empty" *ngIf="!thumbnailPreviewUrl">
+              <div class="icon">🖼️</div>
+              <div>Izaberi thumbnail da vidiš preview</div>
+              <div class="sub">16:9 · JPG / PNG</div>
             </div>
 
-            <div class="file-meta" *ngIf="thumbnailFile">
-              <span>{{ formatBytes(thumbnailFile.size) }}</span>
-              <button type="button" class="mini-x" (click)="clearThumb($event)">✕</button>
+            <div class="thumb-preview" *ngIf="thumbnailPreviewUrl">
+              <img [src]="thumbnailPreviewUrl" />
             </div>
-
-            <div class="thumb-preview" *ngIf="thumbnailPreviewUrl; else thumbEmpty">
-              <img [src]="thumbnailPreviewUrl" alt="thumbnail preview" />
-            </div>
-
-            <ng-template #thumbEmpty>
-              <div class="thumb-empty">
-                <div class="thumb-empty-icon">🖼️</div>
-                <div class="thumb-empty-text">Izaberi thumbnail da vidiš preview</div>
-                <div class="thumb-empty-sub">Preporuka: 16:9, JPG/PNG</div>
-              </div>
-            </ng-template>
           </div>
 
           <!-- VIDEO -->
@@ -128,28 +139,31 @@
 
               <input
                 #videoInput
-                class="hidden-input"
                 type="file"
                 accept="video/*"
+                hidden
                 (change)="onVideoChange($event)"
               />
-              <button class="pick" type="button" (click)="videoInput.click()">
-                Izaberi
-              </button>
+              <button class="pick" (click)="videoInput.click()">Izaberi</button>
             </div>
 
-            <div class="file-name" [class.muted]="!videoFile">
-              {{ videoFile?.name || 'Nije izabrano' }}
-            </div>
+            <div class="file-meta">
+  <span class="file-name">
+    {{ videoFile?.name || 'Nije izabrano' }}
+  </span>
 
-            <div class="file-meta" *ngIf="videoFile">
-              <span>{{ formatBytes(videoFile.size) }}</span>
-              <button type="button" class="mini-x" (click)="clearVideo($event)">✕</button>
-            </div>
+  <button
+    *ngIf="videoFile"
+    type="button"
+    class="mini-x"
+    (click)="clearVideo($event)"
+  >
+    ✕
+  </button>
+</div>
 
-            <div class="mini-hint">
-              Savet: manji fajl = brži upload.
-            </div>
+
+            <div class="mini-hint">Manji fajl = brži upload</div>
           </div>
         </section>
       </div>

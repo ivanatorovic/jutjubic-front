@@ -77,43 +77,55 @@ export class UploadComponent implements OnDestroy {
   }
 
   onThumbnailChange(e: Event) {
-    const input = e.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0] ?? null;
 
-    this.thumbnailFile = file;
-
-    this.revokeThumbPreview();
-    if (this.thumbnailFile) {
-      this.thumbnailPreviewUrl = URL.createObjectURL(this.thumbnailFile);
-    }
+  this.thumbnailFile = file;
+  this.revokeThumbPreview();
+  if (this.thumbnailFile) {
+    this.thumbnailPreviewUrl = URL.createObjectURL(this.thumbnailFile);
   }
 
-  onVideoChange(e: Event) {
-    const input = e.target as HTMLInputElement;
-    this.videoFile = input.files?.[0] ?? null;
-  }
+  input.value = '';
+}
+
+onVideoChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  this.videoFile = input.files?.[0] ?? null;
+  input.value = '';
+}
+
 
   // ===== UPLOAD =====
 
-  upload() {
-    if (this.uploading) return;
+upload() {
+  if (this.uploading) return;
 
-    if (!this.thumbnailFile || !this.videoFile) {
-      this.msg = 'Moraš izabrati thumbnail i video fajl.';
-      return;
-    }
+  const title = this.title.trim();
+  const description = this.description.trim();
+  const tagsRaw = this.tags.trim();
 
-    const parsedTags = this.tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
+  if (!title || !description || !tagsRaw || !this.thumbnailFile || !this.videoFile) {
+    this.msg = 'Popuni naslov, opis, tagove i izaberi thumbnail + video.';
+    return;
+  }
 
-    const info = {
-      title: this.title.trim(),
-      description: this.description.trim(),
-      location: this.location?.trim() || null,
-      tags: parsedTags,
-    };
+  const parsedTags = tagsRaw
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  if (parsedTags.length === 0) {
+    this.msg = 'Unesi bar jedan tag.';
+    return;
+  }
+
+  const info = {
+    title,
+    description,
+    location: this.location?.trim() || null,
+    tags: parsedTags,
+  };
 
     this.msg = 'Upload pokrenut ✅';
     this.uploading = true;
