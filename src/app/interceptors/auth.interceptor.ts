@@ -16,7 +16,7 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private auth: AuthService, private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // ✅ auth endpoints - ne diraj ni token ni auto-logout
+ 
     const isAuthEndpoint =
       req.url.includes('/api/auth/login') ||
       req.url.includes('/api/auth/register') ||
@@ -34,13 +34,13 @@ export class AuthInterceptor implements HttpInterceptor {
         if (!isAuthEndpoint && err.status === 401) {
           const hasToken = !!this.auth.getToken();
 
-          // ✅ token je postojao => istekao/loš => logout + redirect
+        
           if (hasToken) {
             this.auth.logout();
-            this.router.navigate(['/videos']); // ili '/login'
+            this.router.navigate(['/videos']); 
           }
 
-          // ✅ nema tokena => korisnik nije ulogovan => NE redirect
+        
         }
 
         return throwError(() => err);
