@@ -37,10 +37,10 @@ export class VideosComponent implements OnInit, OnDestroy {
       .subscribe((s) => {
         this.uploadState = s;
 
-        // kad završi upload, osveži listu videa
+        
         if (s.status === 'done') {
           this.load();
-          // skloni banner posle par sekundi (opciono)
+          
           setTimeout(() => this.uploadProgress.clear(), 3000);
         }
 
@@ -98,7 +98,7 @@ export class VideosComponent implements OnInit, OnDestroy {
   }
 
   openUser(userId?: number, ev?: Event) {
-    ev?.stopPropagation(); // ⛔ ne otvaraj watch
+    ev?.stopPropagation(); 
     if (!userId) return;
     this.router.navigate(['/user-profile', userId]);
   }

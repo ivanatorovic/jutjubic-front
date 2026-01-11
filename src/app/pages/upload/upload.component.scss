@@ -1,7 +1,7 @@
 :host { display: block; }
 *, *::before, *::after { box-sizing: border-box; }
 
-/* GLOBAL LOCK */
+
 html, body {
   margin: 0;
   width: 100%;
@@ -9,7 +9,6 @@ html, body {
   overflow-x: hidden;
 }
 
-/* PAGE */
 .page {
   min-height: 100vh;
   width: 100%;
@@ -18,7 +17,6 @@ html, body {
   overflow-x: hidden;
 }
 
-/* TOPBAR */
 .topbar {
   height: 56px;
   display: flex;
@@ -47,7 +45,7 @@ html, body {
 
 .name { font-weight: 900; }
 
-/* CONTENT */
+
 .content {
   height: calc(100vh - 56px);
   padding: 12px;
@@ -55,7 +53,7 @@ html, body {
   place-items: center;
 }
 
-/* CARD */
+
 .card {
   width: 100%;
   max-width: 980px;
@@ -68,7 +66,7 @@ html, body {
   overflow: hidden;
 }
 
-/* HEADER */
+
 .header {
   padding: 14px 16px;
   display: flex;
@@ -91,7 +89,7 @@ html, body {
   color: rgba(255,255,255,.6);
 }
 
-/* BUTTON */
+
 .btn {
   border-radius: 999px;
   padding: 10px 18px;
@@ -110,7 +108,7 @@ html, body {
   cursor: not-allowed;
 }
 
-/* GRID */
+
 .grid {
   padding: 16px;
   display: grid;
@@ -118,7 +116,7 @@ html, body {
   gap: 14px;
 }
 
-/* PANELS */
+
 .panel {
   background: rgba(0,0,0,.15);
   border-radius: 16px;
@@ -127,7 +125,7 @@ html, body {
   gap: 12px;
 }
 
-/* FIELDS */
+
 .field label {
   font-size: 12px;
   font-weight: 900;
@@ -148,7 +146,7 @@ html, body {
   height: 110px;
 }
 
-/* TAGS */
+
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -169,7 +167,7 @@ html, body {
   background: rgba(255,255,255,.1);
 }
 
-/* FILES */
+
 .files { gap: 12px; }
 
 .file-card {
@@ -215,7 +213,7 @@ html, body {
   text-overflow: ellipsis;
 }
 
-/* THUMB */
+
 .thumb-empty {
   aspect-ratio: 16 / 9;
   border: 1px dashed rgba(255,255,255,.2);
@@ -242,7 +240,7 @@ html, body {
   object-fit: cover;
 }
 
-/* SPINNER */
+
 .spin {
   width: 14px;
   height: 14px;
@@ -257,7 +255,7 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
-/* RESPONSIVE */
+
 @media (max-width: 860px) {
   .grid { grid-template-columns: 1fr; }
 }
@@ -315,7 +313,6 @@ html, body {
   justify-content: flex-end;
 }
 
-/* tooltip je sakriven dok ne hoveruješ wrapper */
 .tooltip{
   position: absolute;
   right: 0;
@@ -340,7 +337,7 @@ html, body {
   transition: opacity 140ms ease, transform 140ms ease;
 }
 
-/* mala strelica */
+
 .tooltip::before{
   content:"";
   position:absolute;
@@ -354,7 +351,7 @@ html, body {
   transform: rotate(45deg);
 }
 
-/* prikazuj tooltip samo kad je disabled stanje */
+
 .upload-wrap.disabled:hover .tooltip{
   opacity: 1;
   transform: translateY(0);
