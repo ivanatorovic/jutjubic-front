@@ -5,15 +5,12 @@
       <span class="name">jutjubic</span>
     </a>
 
-    <!-- DESNO -->
     <div class="top-actions">
-      <!-- ako nije ulogovan -->
       <ng-container *ngIf="!isLoggedIn(); else logged">
         <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
         <button type="button" class="btn primary" routerLink="/register">Registracija</button>
       </ng-container>
 
-      <!-- ako jeste ulogovan -->
       <ng-template #logged>
         <button class="btn ghost" routerLink="/upload">Upload</button>
 
@@ -32,9 +29,7 @@
 
   <main class="content">
     <div class="watch-layout">
-      <!-- ================= LEFT (main) ================= -->
       <section class="main-col">
-        <!-- PLAYER uvek -->
         <div class="player-wrap" *ngIf="src">
          <div class="player-wrap" *ngIf="src">
             <div class="player-wrap" *ngIf="src">
@@ -55,14 +50,11 @@
 
         </div>
 
-        <!-- hard error (loš id) -->
         <div *ngIf="error" class="state error">{{ error }}</div>
 
-        <!-- meta state -->
         <div *ngIf="!error && metaLoading" class="state">Učitavam detalje…</div>
         <div *ngIf="!error && !metaLoading && metaError" class="state warn">{{ metaError }}</div>
 
-        <!-- ✅ META čim postoji video -->
         <ng-container *ngIf="video as v">
           <h1 class="title">{{ v.title }}</h1>
 
@@ -71,7 +63,7 @@
           </div>
 
           <div class="meta-row">
-            <!-- LEVO: autor -->
+           
             <div class="author">
               <div
                 class="avatar clickable"
@@ -100,7 +92,6 @@
               </div>
             </div>
 
-            <!-- DESNO: stats -->
             <div class="stats">
               <div class="views">{{ v.viewCount ?? 0 }} pregleda</div>
 
@@ -127,13 +118,11 @@
 
           <p class="desc" *ngIf="v.description">{{ v.description }}</p>
 
-          <!-- KOMENTARI -->
           <section class="comments">
             <div class="comments-head">
               <div class="comments-title">Komentari ({{ commentsTotal || comments.length }})</div>
             </div>
 
-            <!-- DODAJ KOMENTAR -->
             <div class="comment-compose" *ngIf="video as v">
               <div class="compose-row">
                 <div class="c-avatar me">
@@ -223,7 +212,6 @@
         </ng-container>
       </section>
 
-      <!-- ================= RIGHT (sidebar) ================= -->
       <aside class="side-col">
         <div class="side-title">Ostali videi</div>
 
@@ -235,7 +223,6 @@
           *ngFor="let it of sideVideos"
           [routerLink]="['/watch', it.id]"
         >
-          <!-- ⚠️ ako ti se metoda zove drugačije, promeni samo ovu liniju -->
           <img class="thumb" [src]="videoService.thumbnailUrl(it.id)" alt="" loading="lazy" />
 
           <div class="side-meta">

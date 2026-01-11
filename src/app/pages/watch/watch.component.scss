@@ -4,7 +4,6 @@
   color: #f1f1f1;
 }
 
-/* topbar */
 .topbar {
   position: sticky;
   top: 0;
@@ -42,7 +41,6 @@
   font-weight: 800;
 }
 
-/* top actions (desno u topbaru) */
 .top-actions {
   margin-left: auto;
   display: flex;
@@ -50,7 +48,6 @@
   align-items: center;
 }
 
-/* states */
 .state {
   padding: 18px 16px;
   color: rgba(255, 255, 255, 0.75);
@@ -66,14 +63,12 @@
   font-size: 12px;
 }
 
-/* content */
 .content {
-  max-width: 1220px; /* malo šire zbog sidebar-a */
+  max-width: 1220px;
   margin: 0 auto;
   padding: 24px 16px 40px;
 }
 
-/* ===== layout: left + right (YT) ===== */
 .watch-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -97,10 +92,9 @@
   min-width: 0;
 }
 
-/* right column */
 .side-col {
   position: sticky;
-  top: 72px; /* ispod topbara */
+  top: 72px;
   max-height: calc(100vh - 90px);
   overflow: auto;
   padding-right: 6px;
@@ -167,7 +161,6 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* player */
 .player-wrap {
   background: #000;
   border-radius: 16px;
@@ -181,7 +174,6 @@
   background: #000;
 }
 
-/* meta */
 .title {
   font-size: 20px;
   font-weight: 800;
@@ -245,7 +237,6 @@
   color: rgba(255, 255, 255, 0.78);
 }
 
-/* stats (desno od author) */
 .stats {
   margin-left: auto;
   display: flex;
@@ -262,7 +253,7 @@
 .stats-chips {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;      /* ✅ omogući novi red */
+  flex-wrap: wrap;
   align-items: center;
 }
 
@@ -281,7 +272,6 @@
   line-height: 1.5;
 }
 
-/* comments */
 .comments {
   margin-top: 22px;
   padding-top: 18px;
@@ -335,7 +325,6 @@
   opacity: 0.6;
 }
 
-/* univerzalno klikabilno */
 .clickable {
   cursor: pointer;
 }
@@ -350,7 +339,6 @@
   filter: brightness(1.15);
 }
 
-/* compose */
 .comment-compose {
   margin: 6px 0 14px;
 }
@@ -395,7 +383,6 @@
   padding-top: 10px;
 }
 
-/* buttons */
 .btn {
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.06);
@@ -426,31 +413,27 @@
   justify-content: center;
   padding: 12px 0 0;
 }
-/* Like chip — jasno stanje */
-/* ================== LIKE – JASNO STANJE ================== */
+
 .like-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease,
+    transform 120ms ease;
 }
 
-/* default (nije lajkovano) */
 .like-chip:not(.liked) {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* ✅ LAJKOVANO – PLAVO + GLOW */
 .like-chip.liked {
-  background: #3b82f6;          /* plavo */
+  background: #3b82f6;
   border-color: #3b82f6;
   color: #fff;
 
-  box-shadow:
-    0 0 0 2px rgba(59, 130, 246, 0.35),
-    0 6px 16px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35), 0 6px 16px rgba(59, 130, 246, 0.35);
 }
 
 .like-chip.liked:hover:not(:disabled) {
