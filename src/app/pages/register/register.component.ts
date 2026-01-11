@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth-service/auth.service';
 import { finalize, timeout } from 'rxjs/operators';
 import { ChangeDetectorRef } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -28,7 +28,7 @@ export class RegisterComponent {
   success = '';
   loading = false;
 
-  constructor(private auth: AuthService, private cdr: ChangeDetectorRef) {}
+  constructor(private auth: AuthService, private cdr: ChangeDetectorRef, private router: Router,) {}
 
   private allFieldsFilled(): boolean {
     const f = this.form;
@@ -47,13 +47,13 @@ export class RegisterComponent {
     this.error = '';
     this.success = '';
 
-    // 1) prazna polja
+   
     if (!this.allFieldsFilled()) {
       this.error = 'Morate uneti sve podatke.';
       return;
     }
 
-    // 2) lozinke
+ 
     if (this.form.password !== this.form.confirmPassword) {
       this.error = 'Lozinke se ne poklapaju.';
       return;
@@ -72,21 +72,25 @@ export class RegisterComponent {
     }) 
   .subscribe({
       next: () => {
-        // 3) uspešno — link poslat
+       
+        this.auth.markJustRegistered(this.form.email); 
         this.success = 'Proverite mejl i kliknite na link u poruci.';
         this.cdr.detectChanges();
+        setTimeout(() => {
+        this.router.navigate(['/login']);
+    },  3500);
 
       },
       error: (err) => {
         this.loading = false;
 
-        // backend poruka (ResponseStatusException vrati message)
+        
         const msg =
           err?.error?.message ||
           (typeof err?.error === 'string' ? err.error : '') ||
           '';
 
-        // 4) postoji korisnik (email/username već zauzet)
+     
         if 
           (msg.toLowerCase().includes('email je već zauzet') ){
               this.error = 'Postoji već korisnik sa ovakvim email-om.';
@@ -100,7 +104,7 @@ export class RegisterComponent {
           return;
         
 
-        // fallback
+      
         this.error = msg || 'Greška pri registraciji. Pokušajte ponovo.';
          this.cdr.detectChanges();
       }
