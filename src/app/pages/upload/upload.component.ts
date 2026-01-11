@@ -38,7 +38,7 @@ export class UploadComponent implements OnDestroy {
     this.revokeThumbPreview();
   }
 
-  // ===== UI HELPERS =====
+ 
 
   tagsList(): string[] {
     return this.tags
@@ -67,7 +67,7 @@ export class UploadComponent implements OnDestroy {
     this.videoFile = null;
   }
 
-  // ===== FILE HANDLING =====
+  
 
   private revokeThumbPreview() {
     if (this.thumbnailPreviewUrl) {
@@ -96,7 +96,7 @@ onVideoChange(e: Event) {
 }
 
 
-  // ===== UPLOAD =====
+
 
 upload() {
   if (this.uploading) return;
@@ -131,10 +131,8 @@ upload() {
     this.uploading = true;
     this.progress = 0;
 
-    // shared banner state
     this.uploadProgress.setUploading(0, 'Upload u toku…');
 
-    // prebacuj odmah na videos
     this.router.navigate(['/videos']);
 
     this.videoService.upload(info, this.thumbnailFile, this.videoFile).subscribe({

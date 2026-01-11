@@ -12,12 +12,12 @@ export interface Video {
   thumbnailPath?: string;
   videoPath?: string;
 
-  // sa backenda (public prikaz)
+  
   username?: string;
   userId?: number;
   likeCount?: number;
   commentCount?: number;
-  createdAt?: string; // ISO string
+  createdAt?: string; 
   location?: string;
   viewCount?: number;
 }
@@ -27,13 +27,13 @@ export interface CommentPublicDto {
   text: string;
   userId: number;
   username: string;
-  createdAt: string; // ISO
+  createdAt: string; 
 }
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
-  number: number; // current page (0-based)
+  number: number; 
   size: number;
   first: boolean;
   last: boolean;
@@ -61,7 +61,7 @@ export class VideoService {
     return `${environment.apiUrl}/api/videos/${id}/stream`;
   }
 
-  // ✅ upload sa progress event-ovima
+  
   upload(info: any, thumbnail: File, video: File): Observable<HttpEvent<any>> {
     const fd = new FormData();
     fd.append('info', JSON.stringify(info));
