@@ -5,11 +5,13 @@ import { Subject, takeUntil } from 'rxjs';
 import { Video, VideoService } from '../../services/video-service/video';
 import { UploadProgressService, UploadState } from '../../services/upload-progress.service';
 import { AuthService } from '../../services/auth-service/auth.service';
+import { LocalTrendingService, VideoDto } from '../../services/local-trending-service/local-trending.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-videos',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule,FormsModule],
   templateUrl: './videos.component.html',
   styleUrls: ['./videos.component.scss'],
 })
@@ -17,30 +19,40 @@ export class VideosComponent implements OnInit, OnDestroy {
   videos: Video[] = [];
   loading = false;
   error = '';
-    uploadState: UploadState = { status: 'idle' };
+  uploadState: UploadState = { status: 'idle' };
 
   private destroy$ = new Subject<void>();
-    currentUserId: number | null = null;
+  currentUserId: number | null = null;
+
+  // ✅ DODAJ: lokalni trending state
+  localTrending: VideoDto[] = [];
+  localTrendingLoading = false;
+  localTrendingError = '';
+  radiusKm = 10; // ✅ konfigurabilno (posle stavi dropdown/slider)
 
   constructor(
     public videoService: VideoService,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private uploadProgress: UploadProgressService,
-     private auth: AuthService
+    private auth: AuthService,
+    // ✅ DODAJ: LocalTrendingService
+    private localTrendingService: LocalTrendingService
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.auth.getUserIdFromToken();
-     this.uploadProgress.state$
+
+    this.uploadProgress.state$
       .pipe(takeUntil(this.destroy$))
       .subscribe((s) => {
         this.uploadState = s;
 
-        
         if (s.status === 'done') {
           this.load();
-          
+          // ✅ po želji: osveži i lokalni trending posle uploada
+          this.loadLocalTrending();
+
           setTimeout(() => this.uploadProgress.clear(), 3000);
         }
 
@@ -48,6 +60,9 @@ export class VideosComponent implements OnInit, OnDestroy {
       });
 
     this.load();
+
+    // ✅ DODAJ: učitaj local trending
+   
   }
 
   ngOnDestroy(): void {
@@ -74,11 +89,41 @@ export class VideosComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ✅ DODAJ: local trending loader (GPS -> backend; deny -> backend IP fallback)
+  async loadLocalTrending(): Promise<void> {
+    this.localTrendingLoading = true;
+    this.localTrendingError = '';
+    this.cdr.detectChanges();
+
+    try {
+      const loc = await this.localTrendingService.getBrowserLocation();
+console.log('LOC =', loc);
+
+      this.localTrendingService
+        .getLocalTrending(this.radiusKm, loc?.lat ?? undefined, loc?.lon ?? undefined)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (videos) => {
+            this.localTrending = videos ?? [];
+            this.localTrendingLoading = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.localTrendingError = `Greška (${err?.status ?? ''})`;
+            this.localTrendingLoading = false;
+            this.cdr.detectChanges();
+          }
+        });
+    } catch (e) {
+      this.localTrendingError = 'Greška pri dobavljanju lokacije';
+      this.localTrendingLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   openWatch(id: number) {
     this.router.navigate(['/watch', id]);
   }
-
- 
 
   formatTime(iso?: string): string {
     if (!iso) return '';
@@ -98,12 +143,12 @@ export class VideosComponent implements OnInit, OnDestroy {
   }
 
   openUser(userId?: number, ev?: Event) {
-    ev?.stopPropagation(); 
+    ev?.stopPropagation();
     if (!userId) return;
     this.router.navigate(['/user-profile', userId]);
   }
 
-    isLoggedIn(): boolean {
+  isLoggedIn(): boolean {
     return this.auth.isLoggedIn();
   }
 
@@ -111,9 +156,4 @@ export class VideosComponent implements OnInit, OnDestroy {
     this.auth.logout();
     this.router.navigate(['/videos']);
   }
-
-
-
-
-
 }

@@ -1,0 +1,64 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+
+    <div class="top-actions">
+      <button class="btn ghost" type="button" (click)="back()">Nazad</button>
+
+      <ng-container *ngIf="isLoggedIn()">
+        <button class="btn primary" (click)="logout()">Logout</button>
+      </ng-container>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="head">
+      <div class="title">📍 Local trending</div>
+
+      <div class="controls">
+        <label class="lbl">
+          Radijus:
+          <select class="sel" [(ngModel)]="radiusKm">
+            <option [ngValue]="2">2 km</option>
+            <option [ngValue]="5">5 km</option>
+            <option [ngValue]="10">10 km</option>
+            <option [ngValue]="25">25 km</option>
+            <option [ngValue]="50">50 km</option>
+          </select>
+        </label>
+
+        <button class="btn primary" type="button" (click)="loadTrending()">
+          Učitaj trending
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="state">Učitavam trending...</div>
+    <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+    <div class="grid" *ngIf="!loading && !error">
+      <article
+        class="card"
+        *ngFor="let t of trending"
+        (click)="openWatch(t.id)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="openWatch(t.id)"
+        (keydown.space)="openWatch(t.id)"
+      >
+        <div class="thumb-wrap">
+          <img class="thumb" [src]="videoService.thumbnailUrl(t.id)" alt="thumbnail" />
+          <div class="play-overlay">▶</div>
+        </div>
+        <div class="info">
+          <div class="title2" [title]="t.title">{{ t.title }}</div>
+        </div>
+      </article>
+
+      <div *ngIf="trending.length === 0" class="state">Nema trending videa u blizini.</div>
+    </div>
+  </section>
+</div>

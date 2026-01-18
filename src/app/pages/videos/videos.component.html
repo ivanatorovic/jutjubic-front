@@ -31,8 +31,10 @@
 
    
     <div class="top-actions">
-     
+     <button type="button" class="btn ghost" routerLink="/trending">Trending</button>
       <ng-container *ngIf="!isLoggedIn(); else logged">
+        
+
         <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
         <button type="button" class="btn primary" routerLink="/register">Registracija</button>
       </ng-container>
@@ -54,6 +56,9 @@
       </ng-template>
     </div>
   </header>
+ 
+
+       
 
   <div *ngIf="loading" class="state">Učitavam videe...</div>
   <div *ngIf="!loading && error" class="state error">{{ error }}</div>
