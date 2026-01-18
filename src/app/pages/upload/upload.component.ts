@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { VideoService } from '../../services/video-service/video';
 import { UploadProgressService } from '../../services/upload-progress.service';
+import { AuthService } from '../../services/auth-service/auth.service';
+
 
 @Component({
   selector: 'app-upload',
@@ -31,7 +33,8 @@ export class UploadComponent implements OnDestroy {
   constructor(
     private videoService: VideoService,
     private router: Router,
-    private uploadProgress: UploadProgressService
+    private uploadProgress: UploadProgressService,
+    private auth: AuthService
   ) {}
 
   ngOnDestroy(): void {
@@ -104,6 +107,13 @@ upload() {
   const title = this.title.trim();
   const description = this.description.trim();
   const tagsRaw = this.tags.trim();
+
+
+  if (!this.auth.isLoggedIn()) {
+  this.msg = 'Moraš da budeš ulogovan da bi uploadovao video.';
+  this.router.navigate(['/login']);
+  return;
+}
 
   if (!title || !description || !tagsRaw || !this.thumbnailFile || !this.videoFile) {
     this.msg = 'Popuni naslov, opis, tagove i izaberi thumbnail + video.';
