@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { VideoService } from '../../services/video-service/video';
 import { UploadProgressService } from '../../services/upload-progress.service';
 import { AuthService } from '../../services/auth-service/auth.service';
-
+import { LocalTrendingService } from '../../services/local-trending-service/local-trending.service';
 
 @Component({
   selector: 'app-upload',
@@ -34,14 +34,13 @@ export class UploadComponent implements OnDestroy {
     private videoService: VideoService,
     private router: Router,
     private uploadProgress: UploadProgressService,
-    private auth: AuthService
+    private auth: AuthService,
+    private trendingService: LocalTrendingService
   ) {}
 
   ngOnDestroy(): void {
     this.revokeThumbPreview();
   }
-
- 
 
   tagsList(): string[] {
     return this.tags
@@ -70,8 +69,6 @@ export class UploadComponent implements OnDestroy {
     this.videoFile = null;
   }
 
-  
-
   private revokeThumbPreview() {
     if (this.thumbnailPreviewUrl) {
       URL.revokeObjectURL(this.thumbnailPreviewUrl);
@@ -80,95 +77,99 @@ export class UploadComponent implements OnDestroy {
   }
 
   onThumbnailChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0] ?? null;
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
 
-  this.thumbnailFile = file;
-  this.revokeThumbPreview();
-  if (this.thumbnailFile) {
-    this.thumbnailPreviewUrl = URL.createObjectURL(this.thumbnailFile);
+    this.thumbnailFile = file;
+    this.revokeThumbPreview();
+    if (this.thumbnailFile) {
+      this.thumbnailPreviewUrl = URL.createObjectURL(this.thumbnailFile);
+    }
+
+    input.value = '';
   }
 
-  input.value = '';
-}
-
-onVideoChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  this.videoFile = input.files?.[0] ?? null;
-  input.value = '';
-}
-
-
-
-
-upload() {
-  if (this.uploading) return;
-
-  const title = this.title.trim();
-  const description = this.description.trim();
-  const tagsRaw = this.tags.trim();
-
-
-  if (!this.auth.isLoggedIn()) {
-  this.msg = 'Moraš da budeš ulogovan da bi uploadovao video.';
-  this.router.navigate(['/login']);
-  return;
-}
-
-  if (!title || !description || !tagsRaw || !this.thumbnailFile || !this.videoFile) {
-    this.msg = 'Popuni naslov, opis, tagove i izaberi thumbnail + video.';
-    return;
+  onVideoChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.videoFile = input.files?.[0] ?? null;
+    input.value = '';
   }
 
-  const parsedTags = tagsRaw
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean);
+  upload() {
+    if (this.uploading) return;
 
-  if (parsedTags.length === 0) {
-    this.msg = 'Unesi bar jedan tag.';
-    return;
-  }
+    const title = this.title.trim();
+    const description = this.description.trim();
+    const tagsRaw = this.tags.trim();
 
-  const info = {
-    title,
-    description,
-    location: this.location?.trim() || null,
-    tags: parsedTags,
-  };
+    if (!this.auth.isLoggedIn()) {
+      this.msg = 'Moraš da budeš ulogovan da bi uploadovao video.';
+      this.router.navigate(['/login']);
+      return;
+    }
 
-    this.msg = 'Upload pokrenut ✅';
-    this.uploading = true;
-    this.progress = 0;
+    if (!title || !description || !tagsRaw || !this.thumbnailFile || !this.videoFile) {
+      this.msg = 'Popuni naslov, opis, tagove i izaberi thumbnail + video.';
+      return;
+    }
 
-    this.uploadProgress.setUploading(0, 'Upload u toku…');
+    const parsedTags = tagsRaw
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
 
-    this.router.navigate(['/videos']);
+    if (parsedTags.length === 0) {
+      this.msg = 'Unesi bar jedan tag.';
+      return;
+    }
 
-    this.videoService.upload(info, this.thumbnailFile, this.videoFile).subscribe({
-      next: (event) => {
-        if (event.type === HttpEventType.UploadProgress) {
-          const total = event.total ?? 0;
-          if (total > 0) {
-            const p = Math.round((event.loaded / total) * 100);
-            this.progress = p;
-            this.uploadProgress.setUploading(p, `Upload u toku… ${p}%`);
-          } else {
-            this.uploadProgress.setUploading(this.progress, 'Upload u toku…');
+    // ✅ UZMI GEOLOKACIJU (bez async/await)
+    this.trendingService.getBrowserLocation().then((loc) => {
+      const info = {
+        title,
+        description,
+        location: this.location?.trim() || null,
+        tags: parsedTags,
+
+        // ✅ NOVO: koordinate (za lokalni trending)
+        latitude: loc?.lat ?? null,
+        longitude: loc?.lon ?? null,
+      };
+
+      this.msg = 'Upload pokrenut ✅';
+      this.uploading = true;
+      this.progress = 0;
+
+      this.uploadProgress.setUploading(0, 'Upload u toku…');
+
+      // tvoja logika: odmah idi na videos
+      this.router.navigate(['/videos']);
+
+      this.videoService.upload(info, this.thumbnailFile!, this.videoFile!).subscribe({
+        next: (event) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const total = event.total ?? 0;
+            if (total > 0) {
+              const p = Math.round((event.loaded / total) * 100);
+              this.progress = p;
+              this.uploadProgress.setUploading(p, `Upload u toku… ${p}%`);
+            } else {
+              this.uploadProgress.setUploading(this.progress, 'Upload u toku…');
+            }
           }
-        }
 
-        if (event.type === HttpEventType.Response) {
+          if (event.type === HttpEventType.Response) {
+            this.uploading = false;
+            this.progress = 100;
+            this.uploadProgress.setDone('Upload završen ✅');
+          }
+        },
+        error: (err) => {
           this.uploading = false;
-          this.progress = 100;
-          this.uploadProgress.setDone('Upload završen ✅');
-        }
-      },
-      error: (err) => {
-        this.uploading = false;
-        const msg = err?.error?.message ?? `Greška (${err?.status ?? '?'})`;
-        this.uploadProgress.setError(msg);
-      },
+          const msg = err?.error?.message ?? `Greška (${err?.status ?? '?'})`;
+          this.uploadProgress.setError(msg);
+        },
+      });
     });
   }
 }
