@@ -42,10 +42,27 @@
 }
 
 .top-actions {
-  margin-left: auto;
   display: flex;
   gap: 10px;
-  align-items: center;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: #fff;
+}
+
+.btn.primary {
+  background: #ff0033;
+  color: #fff;
+  border-color: #ff0033;
 }
 
 .state {
@@ -383,31 +400,6 @@
   padding-top: 10px;
 }
 
-.btn {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.92);
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.btn.ghost {
-  background: transparent;
-}
-
-.btn.primary {
-  background: #ff0033;
-  border-color: rgba(255, 0, 51, 0.55);
-}
-
 .load-more {
   display: flex;
   justify-content: center;
@@ -418,7 +410,10 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease,
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
     transform 120ms ease;
 }
 
@@ -433,7 +428,9 @@
   border-color: #3b82f6;
   color: #fff;
 
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35), 0 6px 16px rgba(59, 130, 246, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(59, 130, 246, 0.35),
+    0 6px 16px rgba(59, 130, 246, 0.35);
 }
 
 .like-chip.liked:hover:not(:disabled) {

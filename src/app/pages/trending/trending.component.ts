@@ -6,7 +6,10 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { VideoService } from '../../services/video-service/video';
 import { AuthService } from '../../services/auth-service/auth.service';
-import { LocalTrendingService, VideoDto } from '../../services/local-trending-service/local-trending.service';
+import {
+  LocalTrendingService,
+  VideoDto,
+} from '../../services/local-trending-service/local-trending.service';
 
 @Component({
   selector: 'app-trending',
@@ -22,6 +25,8 @@ export class TrendingComponent implements OnInit, OnDestroy {
 
   radiusKm = 10;
 
+  radiusOptions: number[] = [1, 3, 5, 10, 20, 50, 100];
+
   private destroy$ = new Subject<void>();
   currentUserId: number | null = null;
 
@@ -30,12 +35,16 @@ export class TrendingComponent implements OnInit, OnDestroy {
     private trendingService: LocalTrendingService,
     private auth: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.auth.getUserIdFromToken();
-    // Nemoj automatski geolocation (browser se buni). Učitaj tek na klik.
+    this.loadTrending(); // ⬅️ samo ovo
+  }
+
+  onRadiusChange(): void {
+    this.loadTrending();
   }
 
   ngOnDestroy(): void {
@@ -87,5 +96,28 @@ export class TrendingComponent implements OnInit, OnDestroy {
   logout(): void {
     this.auth.logout();
     this.router.navigate(['/videos']);
+  }
+
+  openUser(userId: number | undefined | null, ev: Event) {
+    ev.stopPropagation();
+    if (userId == null) return;
+    this.router.navigate(['/user-profile', userId]);
+  }
+
+  formatTime(iso?: string): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+
+    const diff = Date.now() - d.getTime();
+    const min = Math.floor(diff / 60000);
+    const h = Math.floor(min / 60);
+    const days = Math.floor(h / 24);
+
+    if (min < 1) return 'upravo sada';
+    if (min < 60) return `pre ${min} min`;
+    if (h < 24) return `pre ${h} h`;
+    if (days < 7) return `pre ${days} dana`;
+    return d.toLocaleDateString();
   }
 }

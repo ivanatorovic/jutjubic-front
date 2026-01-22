@@ -13,6 +13,7 @@
 
       <ng-template #logged>
         <button class="btn ghost" routerLink="/upload">Upload</button>
+        <button type="button" class="btn ghost" routerLink="/trending">Trending</button>
 
         <button
           class="btn ghost"
@@ -31,7 +32,7 @@
     <div class="watch-layout">
       <section class="main-col">
         <div class="player-wrap" *ngIf="src">
-         <div class="player-wrap" *ngIf="src">
+          <div class="player-wrap" *ngIf="src">
             <div class="player-wrap" *ngIf="src">
               <video
                 #player
@@ -44,10 +45,7 @@
                 (canplay)="tryAutoplay(player)"
               ></video>
             </div>
-
           </div>
-
-
         </div>
 
         <div *ngIf="error" class="state error">{{ error }}</div>
@@ -63,7 +61,6 @@
           </div>
 
           <div class="meta-row">
-           
             <div class="author">
               <div
                 class="avatar clickable"
@@ -96,23 +93,20 @@
               <div class="views">{{ v.viewCount ?? 0 }} pregleda</div>
 
               <div class="stats-chips">
-             <button
-   type="button"
-  class="chip like-chip"
-  [class.liked]="likedByMe"
-  [disabled]="likeBusy"
-  (click)="toggleLike($event)"
->
-<span class="icon">👍</span>
-  {{ v.likeCount ?? 0 }}
-</button>
-
+                <button
+                  type="button"
+                  class="chip like-chip"
+                  [class.liked]="likedByMe"
+                  [disabled]="likeBusy"
+                  (click)="toggleLike($event)"
+                >
+                  <span class="icon">👍</span>
+                  {{ v.likeCount ?? 0 }}
+                </button>
 
                 <span class="chip"> 💬 {{ v.commentCount ?? comments.length }} </span>
               </div>
-                <div class="like-warning" *ngIf="likeAuthError">
-    Moraš biti ulogovan da lajkuješ.
-  </div>
+              <div class="like-warning" *ngIf="likeAuthError">Moraš biti ulogovan da lajkuješ.</div>
             </div>
           </div>
 
@@ -139,7 +133,10 @@
                     [disabled]="postingComment"
                   ></textarea>
 
-                  <div class="compose-actions" *ngIf="newComment.trim().length > 0 || composeFocused">
+                  <div
+                    class="compose-actions"
+                    *ngIf="newComment.trim().length > 0 || composeFocused"
+                  >
                     <button
                       type="button"
                       class="btn ghost"
@@ -165,7 +162,9 @@
             </div>
 
             <div *ngIf="commentsLoading" class="state">Učitavam komentare…</div>
-            <div *ngIf="!commentsLoading && commentsError" class="state warn">{{ commentsError }}</div>
+            <div *ngIf="!commentsLoading && commentsError" class="state warn">
+              {{ commentsError }}
+            </div>
 
             <div *ngIf="!commentsLoading && !commentsError && comments.length === 0" class="state">
               Nema komentara još.
@@ -218,11 +217,7 @@
         <div *ngIf="sideLoading" class="state mini">Učitavam…</div>
         <div *ngIf="!sideLoading && sideError" class="state warn mini">{{ sideError }}</div>
 
-        <a
-          class="side-item"
-          *ngFor="let it of sideVideos"
-          [routerLink]="['/watch', it.id]"
-        >
+        <a class="side-item" *ngFor="let it of sideVideos" [routerLink]="['/watch', it.id]">
           <img class="thumb" [src]="videoService.thumbnailUrl(it.id)" alt="" loading="lazy" />
 
           <div class="side-meta">

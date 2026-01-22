@@ -1,13 +1,11 @@
 <div class="page">
-  
   <header class="topbar">
     <a class="brand" routerLink="/videos" aria-label="jutjubic home">
       <span class="logo">▶</span>
       <span class="name">jutjubic</span>
     </a>
-    
+
     <div class="upload-banner" *ngIf="uploadState.status !== 'idle'">
-      
       <div *ngIf="uploadState.status === 'uploading'" class="ub-row">
         <span class="ub-text"> Upload u toku… {{ uploadState.progress }}% </span>
         <div class="ub-progress">
@@ -15,7 +13,6 @@
         </div>
       </div>
 
-      
       <div *ngIf="uploadState.status === 'done'" class="ub-row ok">
         <span class="ub-text">Upload završen ✅</span>
         <div class="ub-progress">
@@ -23,27 +20,21 @@
         </div>
       </div>
 
-      
       <div *ngIf="uploadState.status === 'error'" class="ub-row bad">
         <span class="ub-text"> Upload neuspešan ❌ {{ uploadState.message }} </span>
       </div>
     </div>
 
-   
     <div class="top-actions">
-     <button type="button" class="btn ghost" routerLink="/trending">Trending</button>
       <ng-container *ngIf="!isLoggedIn(); else logged">
-        
-
         <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
         <button type="button" class="btn primary" routerLink="/register">Registracija</button>
       </ng-container>
 
-      
       <ng-template #logged>
         <button class="btn ghost" routerLink="/upload">Upload</button>
+        <button type="button" class="btn ghost" routerLink="/trending">Trending</button>
 
-        
         <button
           class="btn ghost"
           *ngIf="currentUserId !== null"
@@ -56,9 +47,6 @@
       </ng-template>
     </div>
   </header>
- 
-
-       
 
   <div *ngIf="loading" class="state">Učitavam videe...</div>
   <div *ngIf="!loading && error" class="state error">{{ error }}</div>
