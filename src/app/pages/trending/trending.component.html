@@ -47,10 +47,16 @@
   <div *ngIf="loading" class="state">Učitavam trending videe...</div>
   <div *ngIf="!loading && error" class="state error">{{ error }}</div>
 
-  <div class="grid" *ngIf="!loading && !error">
+  <div class="list" *ngIf="!loading && !error">
+   <div
+      class="row"
+      *ngFor="let v of trending; let i = index"
+      [ngClass]="'rank-' + (i + 1)"
+    >
+    <div class="rank">#{{ i + 1 }}</div>
+
     <article
       class="card"
-      *ngFor="let v of trending"
       (click)="openWatch(v.id)"
       role="button"
       tabindex="0"
@@ -92,7 +98,11 @@
         </div>
       </div>
     </article>
-
-    <div *ngIf="trending.length === 0" class="state">Nema trending videa u vašoj blizini.</div>
   </div>
+
+  <div *ngIf="trending.length === 0" class="state">Nema trending videa u vašoj blizini.</div>
+</div>
+
+
+   
 </div>
