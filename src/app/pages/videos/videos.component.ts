@@ -62,7 +62,7 @@ export class VideosComponent implements OnInit, OnDestroy {
     this.load();
 
     // ✅ DODAJ: učitaj local trending
-   
+   this.loadLocalTrending();
   }
 
   ngOnDestroy(): void {

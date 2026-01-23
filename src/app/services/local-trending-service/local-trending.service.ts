@@ -26,7 +26,7 @@ export class LocalTrendingService {
 
   constructor(private http: HttpClient) {}
 
-  getBrowserLocation(timeoutMs = 20000): Promise<{ lat: number; lon: number } | null> {
+  getBrowserLocation(timeoutMs = 3000): Promise<{ lat: number; lon: number } | null> {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
         console.warn('GEO: navigator.geolocation nije dostupan');
@@ -48,10 +48,10 @@ export class LocalTrendingService {
   }
 
   getLocalTrending(radiusKm: number, lat?: number, lon?: number): Observable<VideoDto[]> {
-    let params = new HttpParams().set('radiusKm', radiusKm);
+    let params = new HttpParams().set('radiusKm', String(radiusKm));
 
     if (lat != null && lon != null) {
-      params = params.set('lat', lat).set('lon', lon);
+      params = params.set('lat', String(lat)).set('lon', String(lon));
     }
 
     // ako nema lat/lon -> backend radi IP fallback
