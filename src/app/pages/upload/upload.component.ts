@@ -1,12 +1,13 @@
+// upload.component.ts
 import { CommonModule } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
 import { Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+
 import { VideoService } from '../../services/video-service/video';
 import { UploadProgressService } from '../../services/upload-progress.service';
 import { AuthService } from '../../services/auth-service/auth.service';
-import { LocalTrendingService } from '../../services/local-trending-service/local-trending.service';
 
 @Component({
   selector: 'app-upload',
@@ -23,20 +24,30 @@ export class UploadComponent implements OnDestroy {
 
   thumbnailFile: File | null = null;
   videoFile: File | null = null;
-
   thumbnailPreviewUrl: string | null = null;
 
   msg = '';
   progress = 0;
   uploading = false;
 
+  // ✅ koordinate dolaze IZ URL-a (postavio openUpload)
+  currentLat: number | null = null;
+  currentLon: number | null = null;
+  locAllowed: boolean | null = null;
+
   constructor(
     private videoService: VideoService,
     private router: Router,
+    private route: ActivatedRoute,
     private uploadProgress: UploadProgressService,
-    private auth: AuthService,
-    private trendingService: LocalTrendingService
-  ) {}
+    private auth: AuthService
+  ) {
+    this.route.queryParams.subscribe((p) => {
+      this.currentLat = p['lat'] != null ? Number(p['lat']) : null;
+      this.currentLon = p['lon'] != null ? Number(p['lon']) : null;
+      this.locAllowed = p['locAllowed'] != null ? Number(p['locAllowed']) === 1 : null;
+    });
+  }
 
   ngOnDestroy(): void {
     this.revokeThumbPreview();
@@ -49,13 +60,6 @@ export class UploadComponent implements OnDestroy {
       .filter(Boolean)
       .slice(0, 10)
       .map((t) => (t.startsWith('#') ? t : `#${t}`));
-  }
-
-  formatBytes(bytes: number): string {
-    const mb = bytes / (1024 * 1024);
-    if (mb >= 1) return `${mb.toFixed(1)} MB`;
-    const kb = bytes / 1024;
-    return `${kb.toFixed(0)} KB`;
   }
 
   clearThumb(e: Event) {
@@ -123,53 +127,51 @@ export class UploadComponent implements OnDestroy {
       return;
     }
 
-    // ✅ UZMI GEOLOKACIJU (bez async/await)
-    this.trendingService.getBrowserLocation().then((loc) => {
-      const info = {
-        title,
-        description,
-        location: this.location?.trim() || null,
-        tags: parsedTags,
+    // ✅ NEMA geolocation poziva ovde -> nema popupa na upload dugmetu
+    const info = {
+      title,
+      description,
+      location: this.location?.trim() || null,
+      tags: parsedTags,
 
-        // ✅ NOVO: koordinate (za lokalni trending)
-        latitude: loc?.lat ?? null,
-        longitude: loc?.lon ?? null,
-      };
+      // ✅ koordinate iz URL-a (ili null ako user blokirao)
+      latitude: this.currentLat,
+      longitude: this.currentLon,
+    };
 
-      this.msg = 'Upload pokrenut ✅';
-      this.uploading = true;
-      this.progress = 0;
+    this.msg = 'Upload pokrenut ✅';
+    this.uploading = true;
+    this.progress = 0;
 
-      this.uploadProgress.setUploading(0, 'Upload u toku…');
+    this.uploadProgress.setUploading(0, 'Upload u toku…');
 
-      // tvoja logika: odmah idi na videos
-      this.router.navigate(['/videos']);
+    // tvoja logika: odmah idi na videos
+    this.router.navigate(['/videos']);
 
-      this.videoService.upload(info, this.thumbnailFile!, this.videoFile!).subscribe({
-        next: (event) => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const total = event.total ?? 0;
-            if (total > 0) {
-              const p = Math.round((event.loaded / total) * 100);
-              this.progress = p;
-              this.uploadProgress.setUploading(p, `Upload u toku… ${p}%`);
-            } else {
-              this.uploadProgress.setUploading(this.progress, 'Upload u toku…');
-            }
+    this.videoService.upload(info, this.thumbnailFile!, this.videoFile!).subscribe({
+      next: (event) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const total = event.total ?? 0;
+          if (total > 0) {
+            const p = Math.round((event.loaded / total) * 100);
+            this.progress = p;
+            this.uploadProgress.setUploading(p, `Upload u toku… ${p}%`);
+          } else {
+            this.uploadProgress.setUploading(this.progress, 'Upload u toku…');
           }
+        }
 
-          if (event.type === HttpEventType.Response) {
-            this.uploading = false;
-            this.progress = 100;
-            this.uploadProgress.setDone('Upload završen ✅');
-          }
-        },
-        error: (err) => {
+        if (event.type === HttpEventType.Response) {
           this.uploading = false;
-          const msg = err?.error?.message ?? `Greška (${err?.status ?? '?'})`;
-          this.uploadProgress.setError(msg);
-        },
-      });
+          this.progress = 100;
+          this.uploadProgress.setDone('Upload završen ✅');
+        }
+      },
+      error: (err) => {
+        this.uploading = false;
+        const msg = err?.error?.message ?? `Greška (${err?.status ?? '?'})`;
+        this.uploadProgress.setError(msg);
+      },
     });
   }
 }

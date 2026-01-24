@@ -91,6 +91,23 @@ export class VideosComponent implements OnInit, OnDestroy {
       replaceUrl: true,
     });
   }
+}// ✅ Upload klik = user gesture -> browser popup za lokaciju (allow/block)
+// ✅ Upload klik: prvo otvori /upload (bez čekanja), pa onda traži lokaciju
+async openUpload(): Promise<void> {
+  // 1) odmah otvori upload stranicu
+  await this.router.navigate(['/upload'], { replaceUrl: true });
+
+  // 2) tek onda pokušaj da dobiješ lokaciju (popup će se pojaviti sad)
+  const loc = await this.trendingService.getBrowserLocation(10000);
+
+  // 3) update URL sa parametrima (ne menja stranicu, samo query)
+  await this.router.navigate([], {
+    queryParams: loc
+      ? { lat: loc.lat, lon: loc.lon, locAllowed: 1 }
+      : { lat: null, lon: null, locAllowed: 0 },
+    queryParamsHandling: 'merge',
+    replaceUrl: true,
+  });
 }
 
 
