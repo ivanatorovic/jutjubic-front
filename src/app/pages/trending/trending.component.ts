@@ -1,15 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
 import { VideoService } from '../../services/video-service/video';
 import { AuthService } from '../../services/auth-service/auth.service';
-import {
-  LocalTrendingService,
-  VideoDto,
-} from '../../services/local-trending-service/local-trending.service';
+import { LocalTrendingService, VideoDto } from '../../services/local-trending-service/local-trending.service';
 
 @Component({
   selector: 'app-trending',
@@ -23,12 +20,17 @@ export class TrendingComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
 
-  radiusKm = 10;
 
+  radiusKm = 10;
   radiusOptions: number[] = [1, 3, 5, 10, 20, 50, 100];
 
   private destroy$ = new Subject<void>();
   currentUserId: number | null = null;
+
+  currentLat?: number;
+  currentLon?: number;
+
+  private cleaningUrl = false; // ✅ da izbegnemo petlju kad brišemo parametre
 
   constructor(
     public videoService: VideoService,
@@ -36,15 +38,18 @@ export class TrendingComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.auth.getUserIdFromToken();
-    this.loadTrending(); // ⬅️ samo ovo
-  }
 
-  onRadiusChange(): void {
-    this.loadTrending();
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((p) => {
+        // ne radimo async u subscribe; pozivamo helper
+        this.handleParams(p);
+      });
   }
 
   ngOnDestroy(): void {
@@ -52,41 +57,82 @@ export class TrendingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  async loadTrending(): Promise<void> {
+  private async handleParams(p: any): Promise<void> {
+    const urlLat = p['lat'] ? Number(p['lat']) : undefined;
+    const urlLon = p['lon'] ? Number(p['lon']) : undefined;
+
+    // 1) ako je geo permission DENIED i u URL-u stoje koordinate → obriši ih
+    const perm = await this.trendingService.getGeoPermissionState();
+
+    if (!this.cleaningUrl && perm === 'denied' && (urlLat != null || urlLon != null)) {
+      this.cleaningUrl = true;
+
+      await this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { lat: null, lon: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+
+      this.cleaningUrl = false;
+      return; // posle navigate će doći novi queryParams event bez lat/lon
+    }
+
+    // 2) koristi koordinate iz URL-a (ako postoje), u suprotnom undefined -> backend fallback
+    this.currentLat = urlLat;
+    this.currentLon = urlLon;
+
+    this.loadTrending(this.currentLat, this.currentLon);
+   
+  }
+
+  onRadiusChange(): void {
+    this.loadTrending(this.currentLat, this.currentLon);
+  }
+
+  loadTrending(lat?: number, lon?: number): void {
     this.loading = true;
     this.error = '';
     this.cdr.detectChanges();
 
-    try {
-      const loc = await this.trendingService.getBrowserLocation();
-      this.trendingService
-        .getLocalTrending(this.radiusKm, loc?.lat ?? undefined, loc?.lon ?? undefined)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (data) => {
-            this.trending = data ?? [];
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            this.error = `Greška (${err?.status ?? ''})`;
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-        });
-    } catch {
-      this.error = 'Greška pri dobavljanju lokacije';
-      this.loading = false;
-      this.cdr.detectChanges();
+    this.trendingService
+      .getLocalTrending(this.radiusKm, lat, lon)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.trending = data ?? [];
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = `Greška (${err?.status ?? ''})`;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  // ✅ dugme “Osveži lokaciju” (user gesture) – ako hoćeš u UI
+  async refreshLocation(): Promise<void> {
+    const loc = await this.trendingService.getBrowserLocation(15000);
+
+    if (loc) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { lat: loc.lat, lon: loc.lon },
+        queryParamsHandling: 'merge',
+      });
+    } else {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { lat: null, lon: null },
+        queryParamsHandling: 'merge',
+      });
     }
   }
 
   openWatch(id: number) {
     this.router.navigate(['/watch', id]);
-  }
-
-  back() {
-    this.router.navigate(['/videos']);
   }
 
   isLoggedIn(): boolean {

@@ -33,7 +33,9 @@
 
       <ng-template #logged>
         <button class="btn ghost" routerLink="/upload">Upload</button>
-        <button type="button" class="btn ghost" routerLink="/trending">Trending</button>
+        <button type="button" class="btn ghost" (click)="openTrending()">Trending</button>
+
+
 
         <button
           class="btn ghost"

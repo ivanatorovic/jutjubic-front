@@ -44,8 +44,11 @@
     </div>
   </div>
 
+
   <div *ngIf="loading" class="state">Učitavam trending videe...</div>
   <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+ 
+
 
   <div class="list" *ngIf="!loading && !error">
    <div

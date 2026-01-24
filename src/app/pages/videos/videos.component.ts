@@ -2,16 +2,17 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+
 import { Video, VideoService } from '../../services/video-service/video';
 import { UploadProgressService, UploadState } from '../../services/upload-progress.service';
 import { AuthService } from '../../services/auth-service/auth.service';
-import { LocalTrendingService, VideoDto } from '../../services/local-trending-service/local-trending.service';
-import { FormsModule } from '@angular/forms';
+import { LocalTrendingService } from '../../services/local-trending-service/local-trending.service';
 
 @Component({
   selector: 'app-videos',
   standalone: true,
-  imports: [CommonModule, RouterModule,FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './videos.component.html',
   styleUrls: ['./videos.component.scss'],
 })
@@ -24,20 +25,13 @@ export class VideosComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   currentUserId: number | null = null;
 
-  // ✅ DODAJ: lokalni trending state
-  localTrending: VideoDto[] = [];
-  localTrendingLoading = false;
-  localTrendingError = '';
-  radiusKm = 10; // ✅ konfigurabilno (posle stavi dropdown/slider)
-
   constructor(
     public videoService: VideoService,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private uploadProgress: UploadProgressService,
     private auth: AuthService,
-    // ✅ DODAJ: LocalTrendingService
-    private localTrendingService: LocalTrendingService
+    private trendingService: LocalTrendingService
   ) {}
 
   ngOnInit(): void {
@@ -50,9 +44,6 @@ export class VideosComponent implements OnInit, OnDestroy {
 
         if (s.status === 'done') {
           this.load();
-          // ✅ po želji: osveži i lokalni trending posle uploada
-          this.loadLocalTrending();
-
           setTimeout(() => this.uploadProgress.clear(), 3000);
         }
 
@@ -60,9 +51,6 @@ export class VideosComponent implements OnInit, OnDestroy {
       });
 
     this.load();
-
-    // ✅ DODAJ: učitaj local trending
-   this.loadLocalTrending();
   }
 
   ngOnDestroy(): void {
@@ -89,40 +77,32 @@ export class VideosComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ✅ DODAJ: local trending loader (GPS -> backend; deny -> backend IP fallback)
-  async loadLocalTrending(): Promise<void> {
-    this.localTrendingLoading = true;
-    this.localTrendingError = '';
-    this.cdr.detectChanges();
+  // ✅ Trending klik = user gesture -> browser popup za lokaciju
+  async openTrending(): Promise<void> {
+  // odmah otvori trending (fallback)
+  await this.router.navigate(['/trending']);
 
-    try {
-      const loc = await this.localTrendingService.getBrowserLocation();
-console.log('LOC =', loc);
+  const loc = await this.trendingService.getBrowserLocation(10000);
 
-      this.localTrendingService
-        .getLocalTrending(this.radiusKm, loc?.lat ?? undefined, loc?.lon ?? undefined)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (videos) => {
-            this.localTrending = videos ?? [];
-            this.localTrendingLoading = false;
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            this.localTrendingError = `Greška (${err?.status ?? ''})`;
-            this.localTrendingLoading = false;
-            this.cdr.detectChanges();
-          }
-        });
-    } catch (e) {
-      this.localTrendingError = 'Greška pri dobavljanju lokacije';
-      this.localTrendingLoading = false;
-      this.cdr.detectChanges();
-    }
+  if (loc) {
+    await this.router.navigate(['/trending'], {
+      queryParams: { lat: loc.lat, lon: loc.lon },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
+}
+
+
 
   openWatch(id: number) {
     this.router.navigate(['/watch', id]);
+  }
+
+  openUser(userId?: number, ev?: Event) {
+    ev?.stopPropagation();
+    if (!userId) return;
+    this.router.navigate(['/user-profile', userId]);
   }
 
   formatTime(iso?: string): string {
@@ -140,12 +120,6 @@ console.log('LOC =', loc);
     if (h < 24) return `pre ${h} h`;
     if (days < 7) return `pre ${days} dana`;
     return d.toLocaleDateString();
-  }
-
-  openUser(userId?: number, ev?: Event) {
-    ev?.stopPropagation();
-    if (!userId) return;
-    this.router.navigate(['/user-profile', userId]);
   }
 
   isLoggedIn(): boolean {
