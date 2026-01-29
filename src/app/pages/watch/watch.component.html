@@ -212,6 +212,44 @@
       </section>
 
       <aside class="side-col">
+        <div class="chat-card">
+  <div class="chat-head">
+    <div class="chat-title">Live chat</div>
+    <div class="chat-sub" *ngIf="id">Video #{{ id }}</div>
+  </div>
+
+  <div class="chat-messages">
+    <div class="chat-empty" *ngIf="chatMessages.length === 0">
+      Nema poruka još. (Videćeš samo poruke od trenutka ulaska)
+    </div>
+
+    <div class="chat-msg" *ngFor="let m of chatMessages">
+      <div class="chat-meta">
+        <b>{{ m.sender }}</b>
+        <span class="dot">•</span>
+        <small>{{ formatTime(m.ts) }}</small>
+      </div>
+      <div class="chat-text">{{ m.content }}</div>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <input
+      [(ngModel)]="chatText"
+      placeholder="Napiši poruku…"
+      (keyup.enter)="sendChat()"
+      [disabled]="!isLoggedIn()"
+    />
+    <button class="btn primary" (click)="sendChat()" [disabled]="!isLoggedIn() || !chatText.trim()">
+      Pošalji
+    </button>
+  </div>
+
+  <div class="chat-hint" *ngIf="!isLoggedIn()">
+    Moraš biti ulogovan da pišeš poruke.
+  </div>
+</div>
+
         <div class="side-title">Ostali videi</div>
 
         <div *ngIf="sideLoading" class="state mini">Učitavam…</div>

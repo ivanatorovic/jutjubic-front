@@ -5,11 +5,15 @@ import { Subject, takeUntil } from 'rxjs';
 import { CommentPublicDto, Video, VideoService } from '../../services/video-service/video';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth-service/auth.service';
+import { FormsModule } from '@angular/forms';
+import { StreamChatService } from '../../services/stream-chat-service/stream-chat.service';
+import { StreamChatMessage } from '../../model/stream-chat-message';
+
 
 @Component({
   selector: 'app-watch',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule,FormsModule],
   templateUrl: './watch.component.html',
   styleUrls: ['./watch.component.scss'],
 })
@@ -46,16 +50,22 @@ export class WatchComponent implements OnInit, OnDestroy {
   sideVideos: Video[] = [];
   sideLoading = false;
   sideError = '';
+  // CHAT
+chatText = '';
+chatMessages: StreamChatMessage[] = [];
+private chatConnectedForVideoId: number | null = null;
 
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private route: ActivatedRoute,
-    public videoService: VideoService,
-    private cdr: ChangeDetectorRef,
-    private router: Router,
-    private auth: AuthService
-  ) {}
+ constructor(
+  private route: ActivatedRoute,
+  public videoService: VideoService,
+  private cdr: ChangeDetectorRef,
+  private router: Router,
+  private auth: AuthService,
+  private chat: StreamChatService
+) {}
+
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((pm) => {
@@ -70,6 +80,26 @@ export class WatchComponent implements OnInit, OnDestroy {
 
       this.error = '';
       this.id = id;
+      // (re)connect chat samo ako je novi video
+if (this.chatConnectedForVideoId !== id) {
+  this.chat.disconnect(); // prekini prethodni room ako si prešla na drugi video
+  this.chatConnectedForVideoId = id;
+
+  // reset poruka na UI-u (zahtev kaže: nema istorije)
+  this.chatMessages = [];
+  this.cdr.detectChanges();
+
+  this.chat.connect(id);
+
+  // subscribe na observable poruka (u trenutku ulaska vidiš samo nove)
+  this.chat.messages$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((msgs) => {
+      this.chatMessages = msgs;
+      this.cdr.detectChanges();
+    });
+}
+
       this.src = this.videoService.streamUrl(id);
 
       this.loadMeta(id);
@@ -143,6 +173,8 @@ export class WatchComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.chat.disconnect();
+
   }
 
   formatTime(iso?: string): string {
@@ -372,4 +404,21 @@ export class WatchComponent implements OnInit, OnDestroy {
       p.catch((e: any) => {});
     }
   }
+  sendChat() {
+  if (!this.id) return;
+
+  const content = this.chatText.trim();
+  if (!content) return;
+
+  // ako hoćeš da samo ulogovani pišu:
+  if (!this.auth.isLoggedIn()) {
+    // možeš i da prikažeš poruku, ali bar blokiraj slanje
+    return;
+  }
+
+  const sender = this.currentUsername ?? 'anon';
+  this.chat.send(this.id, sender, content);
+  this.chatText = '';
+}
+
 }

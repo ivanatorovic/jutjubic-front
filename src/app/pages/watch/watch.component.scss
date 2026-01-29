@@ -453,3 +453,49 @@
   font-weight: 600;
   text-align: right;
 }
+.chat-card {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.chat-head { margin-bottom: 10px; }
+.chat-title { font-weight: 700; }
+.chat-sub { opacity: .7; font-size: 12px; margin-top: 2px; }
+
+.chat-messages {
+  max-height: 280px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.chat-empty { opacity: .7; font-size: 13px; padding: 8px; }
+
+.chat-msg { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.chat-msg:last-child { border-bottom: 0; }
+
+.chat-meta { display: flex; gap: 8px; align-items: center; font-size: 12px; opacity: .9; }
+.chat-text { margin-top: 4px; font-size: 13px; }
+
+.chat-input {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.18);
+  color: inherit;
+  outline: none;
+}
+
+.chat-hint { margin-top: 8px; font-size: 12px; opacity: .7; }
