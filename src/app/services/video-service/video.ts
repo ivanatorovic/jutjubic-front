@@ -20,6 +20,9 @@ export interface Video {
   createdAt?: string; 
   location?: string;
   viewCount?: number;
+  scheduled?: boolean;
+scheduledAt?: string; 
+
 }
 
 export interface CommentPublicDto {
@@ -38,6 +41,15 @@ export interface PageResponse<T> {
   first: boolean;
   last: boolean;
 }
+export type PremiereStatus = 'SCHEDULED' | 'LIVE' | 'ENDED';
+export interface WatchInfoDto {
+  serverNow: string;    
+  streamStart: string;  
+  durationSeconds: number | null;
+  status: PremiereStatus;
+}
+
+
 
 @Injectable({ providedIn: 'root' })
 export class VideoService {
@@ -100,5 +112,11 @@ unlike(videoId: number) {
 isLiked(videoId: number) {
   return this.http.get<boolean>(`${environment.apiUrl}/api/videos/${videoId}/like`);
 }
+
+watchInfo(id: number) {
+  return this.http.get<WatchInfoDto>(`${environment.apiUrl}/api/videos/${id}/watch-info`);
+}
+
+
 
 }

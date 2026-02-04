@@ -147,4 +147,21 @@ async openUpload(): Promise<void> {
     this.auth.logout();
     this.router.navigate(['/videos']);
   }
+
+  isScheduledCard(v: any): boolean {
+  // najčešće varijante koje backend ume da šalje
+  const scheduledFlag = v?.scheduled === true;
+
+  const scheduledAt =
+    !!v?.scheduledAt || !!v?.scheduled_at || !!v?.scheduledAtLocal;
+
+  const premiereStatus =
+    v?.premiereStatus === 'SCHEDULED' || v?.status === 'SCHEDULED';
+
+  const streamStartFuture =
+    !!v?.streamStart && new Date(v.streamStart).getTime() > Date.now();
+
+  return scheduledFlag || scheduledAt || premiereStatus || streamStartFuture;
+}
+
 }

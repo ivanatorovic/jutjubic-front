@@ -31,21 +31,34 @@
   <main class="content">
     <div class="watch-layout">
       <section class="main-col">
-        <div class="player-wrap" *ngIf="src">
-          <div class="player-wrap" *ngIf="src">
-            <div class="player-wrap" *ngIf="src">
-              <video
-                #player
-                class="player"
-                [src]="src"
-                controls
-                [muted]="true"
-                playsinline
-                preload="metadata"
-                (canplay)="tryAutoplay(player)"
-              ></video>
-            </div>
+        <div class="premiere" *ngIf="premiereActive">
+          <div class="prem-title">Premijera</div>
+          <div class="prem-sub">
+            Počinje u: <b>{{ premiereCountdown }}</b>
           </div>
+          <div class="prem-sub muted">Zakazano: {{ premiereStartLocal }}</div>
+        </div>
+
+        <!-- ✅ 1) poruka kad je premijera završena -->
+        <div class="ended-screen" *ngIf="premiereEnded">Premijera je završena</div>
+
+        <!-- ✅ 2) player se prikazuje samo ako nije countdown i nije ended -->
+        <div class="player-wrap" *ngIf="src && !premiereActive && !premiereEnded">
+          <video
+            #player
+            class="player"
+            [src]="src"
+            controls
+            [muted]="true"
+            playsinline
+            preload="metadata"
+            (canplay)="tryAutoplay(player)"
+            (pause)="onPause($event)"
+            (keydown)="onSpace($event)"
+            (timeupdate)="onTimeUpdate(player)"
+            (seeking)="onSeeking(player)"
+            (ended)="onEnded()"
+          ></video>
         </div>
 
         <div *ngIf="error" class="state error">{{ error }}</div>
@@ -104,7 +117,9 @@
                   {{ v.likeCount ?? 0 }}
                 </button>
 
-                <span class="chip"> 💬 {{ v.commentCount ?? comments.length }} </span>
+                <span class="chip" *ngIf="!hideComments">
+                  💬 {{ v.commentCount ?? comments.length }}
+                </span>
               </div>
               <div class="like-warning" *ngIf="likeAuthError">Moraš biti ulogovan da lajkuješ.</div>
             </div>
@@ -112,7 +127,7 @@
 
           <p class="desc" *ngIf="v.description">{{ v.description }}</p>
 
-          <section class="comments">
+          <section class="comments" *ngIf="video && !metaLoading && !hideComments">
             <div class="comments-head">
               <div class="comments-title">Komentari ({{ commentsTotal || comments.length }})</div>
             </div>
@@ -212,7 +227,7 @@
       </section>
 
       <aside class="side-col">
-        <div class="chat-card">
+        <div class="chat-card" *ngIf="showChat">
           <div class="chat-head">
             <div class="chat-title">Live chat</div>
             <div class="chat-sub" *ngIf="id">Video #{{ id }}</div>
