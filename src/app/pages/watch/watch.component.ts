@@ -9,11 +9,10 @@ import { FormsModule } from '@angular/forms';
 import { StreamChatService } from '../../services/stream-chat-service/stream-chat.service';
 import { StreamChatMessage } from '../../model/stream-chat-message';
 
-
 @Component({
   selector: 'app-watch',
   standalone: true,
-  imports: [CommonModule, RouterModule,FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './watch.component.html',
   styleUrls: ['./watch.component.scss'],
 })
@@ -51,21 +50,20 @@ export class WatchComponent implements OnInit, OnDestroy {
   sideLoading = false;
   sideError = '';
   // CHAT
-chatText = '';
-chatMessages: StreamChatMessage[] = [];
-private chatConnectedForVideoId: number | null = null;
+  chatText = '';
+  chatMessages: StreamChatMessage[] = [];
+  private chatConnectedForVideoId: number | null = null;
 
   private destroy$ = new Subject<void>();
 
- constructor(
-  private route: ActivatedRoute,
-  public videoService: VideoService,
-  private cdr: ChangeDetectorRef,
-  private router: Router,
-  private auth: AuthService,
-  private chat: StreamChatService
-) {}
-
+  constructor(
+    private route: ActivatedRoute,
+    public videoService: VideoService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private auth: AuthService,
+    private chat: StreamChatService,
+  ) {}
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((pm) => {
@@ -81,24 +79,22 @@ private chatConnectedForVideoId: number | null = null;
       this.error = '';
       this.id = id;
       // (re)connect chat samo ako je novi video
-if (this.chatConnectedForVideoId !== id) {
-  this.chat.disconnect(); // prekini prethodni room ako si prešla na drugi video
-  this.chatConnectedForVideoId = id;
+      if (this.chatConnectedForVideoId !== id) {
+        this.chat.disconnect(); // prekini prethodni room ako si prešla na drugi video
+        this.chatConnectedForVideoId = id;
 
-  // reset poruka na UI-u (zahtev kaže: nema istorije)
-  this.chatMessages = [];
-  this.cdr.detectChanges();
+        // reset poruka na UI-u (zahtev kaže: nema istorije)
+        this.chatMessages = [];
+        this.cdr.detectChanges();
 
-  this.chat.connect(id);
+        this.chat.connect(id);
 
-  // subscribe na observable poruka (u trenutku ulaska vidiš samo nove)
-  this.chat.messages$
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((msgs) => {
-      this.chatMessages = msgs;
-      this.cdr.detectChanges();
-    });
-}
+        // subscribe na observable poruka (u trenutku ulaska vidiš samo nove)
+        this.chat.messages$.pipe(takeUntil(this.destroy$)).subscribe((msgs) => {
+          this.chatMessages = msgs;
+          this.cdr.detectChanges();
+        });
+      }
 
       this.src = this.videoService.streamUrl(id);
 
@@ -174,7 +170,6 @@ if (this.chatConnectedForVideoId !== id) {
     this.destroy$.next();
     this.destroy$.complete();
     this.chat.disconnect();
-
   }
 
   formatTime(iso?: string): string {
@@ -241,10 +236,15 @@ if (this.chatConnectedForVideoId !== id) {
       },
 
       error: (err) => {
-        this.postError =
-          err?.status === 401
-            ? 'Moraš biti ulogovan da komentarišeš.'
-            : `Ne mogu da pošaljem komentar (${err?.status ?? '?'})`;
+        if (err?.status === 429) {
+          this.postError =
+            err?.error?.message ?? err?.error ?? 'Previše komentara. Pokušaj kasnije.';
+        } else if (err?.status === 401) {
+          this.postError = 'Moraš biti ulogovan da komentarišeš.';
+        } else {
+          this.postError = `Ne mogu da pošaljem komentar (${err?.status ?? '?'})`;
+        }
+
         this.postingComment = false;
         this.cdr.detectChanges();
       },
@@ -405,20 +405,19 @@ if (this.chatConnectedForVideoId !== id) {
     }
   }
   sendChat() {
-  if (!this.id) return;
+    if (!this.id) return;
 
-  const content = this.chatText.trim();
-  if (!content) return;
+    const content = this.chatText.trim();
+    if (!content) return;
 
-  // ako hoćeš da samo ulogovani pišu:
-  if (!this.auth.isLoggedIn()) {
-    // možeš i da prikažeš poruku, ali bar blokiraj slanje
-    return;
+    // ako hoćeš da samo ulogovani pišu:
+    if (!this.auth.isLoggedIn()) {
+      // možeš i da prikažeš poruku, ali bar blokiraj slanje
+      return;
+    }
+
+    const sender = this.currentUsername ?? 'anon';
+    this.chat.send(this.id, sender, content);
+    this.chatText = '';
   }
-
-  const sender = this.currentUsername ?? 'anon';
-  this.chat.send(this.id, sender, content);
-  this.chatText = '';
-}
-
 }
