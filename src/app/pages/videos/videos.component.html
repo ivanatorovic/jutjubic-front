@@ -92,12 +92,14 @@
           <div class="location" *ngIf="v.location && v.location.trim()">📍 {{ v.location }}</div>
         </div>
 
-        <div class="stats">
+        <div class="stats" *ngIf="!isScheduledCard(v)">
           <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
           <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
           <span class="chip">💬 {{ v.commentCount ?? 0 }}</span>
         </div>
       </div>
+
+      
     </article>
 
     <div *ngIf="videos.length === 0" class="state">Nema videa još.</div>

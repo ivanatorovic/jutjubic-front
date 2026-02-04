@@ -8,6 +8,8 @@ import { AuthService } from '../../services/auth-service/auth.service';
 import { FormsModule } from '@angular/forms';
 import { StreamChatService } from '../../services/stream-chat-service/stream-chat.service';
 import { StreamChatMessage } from '../../model/stream-chat-message';
+import { ViewChild, ElementRef } from '@angular/core';
+
 
 
 @Component({
@@ -57,13 +59,36 @@ private chatConnectedForVideoId: number | null = null;
 
   private destroy$ = new Subject<void>();
 
+premiereActive = false;
+premiereCountdown = '';
+premiereStartLocal = '';
+noPause = false;
+premiereEnded = false;
+durationSeconds: number | null = null;
+isPremiereVideo = false;
+showChat = false;
+isScheduledVideo = false;
+
+
+
+
+private streamStartMs: number | null = null;
+private countdownTimer: any = null;
+private syncTimer: any = null;
+@ViewChild('player') playerRef?: ElementRef<HTMLVideoElement>;
+
+
+
  constructor(
   private route: ActivatedRoute,
   public videoService: VideoService,
   private cdr: ChangeDetectorRef,
   private router: Router,
   private auth: AuthService,
-  private chat: StreamChatService
+  private chat: StreamChatService,
+
+ 
+
 ) {}
 
 
@@ -80,28 +105,10 @@ private chatConnectedForVideoId: number | null = null;
 
       this.error = '';
       this.id = id;
-      // (re)connect chat samo ako je novi video
-if (this.chatConnectedForVideoId !== id) {
-  this.chat.disconnect(); // prekini prethodni room ako si prešla na drugi video
-  this.chatConnectedForVideoId = id;
-
-  // reset poruka na UI-u (zahtev kaže: nema istorije)
-  this.chatMessages = [];
-  this.cdr.detectChanges();
-
-  this.chat.connect(id);
-
-  // subscribe na observable poruka (u trenutku ulaska vidiš samo nove)
-  this.chat.messages$
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((msgs) => {
-      this.chatMessages = msgs;
-      this.cdr.detectChanges();
-    });
-}
+     
 
       this.src = this.videoService.streamUrl(id);
-
+      this.setupScheduledSync(id);
       this.loadMeta(id);
       this.resetCommentsPaging();
       this.loadCommentsPage(id, true);
@@ -120,6 +127,7 @@ if (this.chatConnectedForVideoId !== id) {
     this.videoService.getById(id).subscribe({
       next: (v) => {
         this.video = v;
+        this.noPause = !!v.scheduled; 
         this.metaLoading = false;
 
         this.likedByMe = false;
@@ -140,7 +148,7 @@ if (this.chatConnectedForVideoId !== id) {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.metaError = `Ne mogu da učitam podatke (${err?.status ?? '?'})`;
+        this.metaError = `Video jos uvek nije dostupan`;
         this.metaLoading = false;
         this.cdr.detectChanges();
       },
@@ -215,6 +223,7 @@ if (this.chatConnectedForVideoId !== id) {
   }
 
   postComment() {
+    if (this.hideComments) return;
     if (!this.id) return;
     const text = this.newComment.trim();
     if (!text) return;
@@ -420,5 +429,275 @@ if (this.chatConnectedForVideoId !== id) {
   this.chat.send(this.id, sender, content);
   this.chatText = '';
 }
+
+private setupScheduledSync(id: number) {
+  this.clearTimers();
+
+  this.videoService.watchInfo(id).subscribe({
+    next: (info) => {
+      // ✅ premijera je ako postoji streamStart
+      const isPremiere = !!info.streamStart;
+      this.isPremiereVideo = isPremiere;
+
+      // ✅ chat: premijera dok je SCHEDULED ili LIVE (ne posle)
+      this.showChat = isPremiere && info.status !== 'ENDED';
+
+      // ✅ ako NIJE premijera -> ugasi chat i resetuj
+      if (!isPremiere) {
+        this.premiereActive = false;
+        this.premiereEnded = false;
+        this.streamStartMs = null;
+        this.durationSeconds = info.durationSeconds ?? null;
+
+        if (this.chatConnectedForVideoId !== null) {
+          this.chat.disconnect();
+          this.chatConnectedForVideoId = null;
+          this.chatMessages = [];
+        }
+
+        this.cdr.detectChanges();
+        return;
+      }
+
+      // ✅ ako je premijera završena
+      if (info.status === 'ENDED') {
+        this.setPremiereEndedUI(); // ovo već gasi chat + src
+        this.cdr.detectChanges();
+        return;
+      }
+
+      // ✅ premijera (SCHEDULED ili LIVE) -> CONNECT CHAT (samo ako treba da se vidi)
+      if (this.showChat && this.chatConnectedForVideoId !== id) {
+        this.chat.disconnect();
+        this.chatConnectedForVideoId = id;
+
+        this.chatMessages = [];
+        this.cdr.detectChanges();
+
+        this.chat.connect(id);
+
+        this.chat.messages$
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((msgs) => {
+            this.chatMessages = msgs;
+            this.cdr.detectChanges();
+          });
+      }
+
+      // ✅ sigurnosno: ako iz nekog razloga showChat postane false -> ugasi chat
+      if (!this.showChat && this.chatConnectedForVideoId !== null) {
+        this.chat.disconnect();
+        this.chatConnectedForVideoId = null;
+        this.chatMessages = [];
+      }
+
+      // --- tvoja postojeća logika za countdown/live sync ---
+      const serverNowMs = new Date(info.serverNow).getTime();
+      const startMs = new Date(info.streamStart).getTime();
+
+      this.streamStartMs = startMs;
+      this.durationSeconds = info.durationSeconds ?? null;
+
+      const diffMs = startMs - serverNowMs;
+
+      if (diffMs > 0) {
+        this.premiereActive = true;
+        this.premiereEnded = false;
+
+        // (opciono) popuni prikaz zakazanog vremena
+        this.premiereStartLocal = new Date(info.streamStart).toLocaleString();
+
+        this.updateCountdown(serverNowMs, startMs);
+
+        this.countdownTimer = setInterval(() => {
+          const now = Date.now();
+          if (now >= startMs) {
+            const offsetSeconds = Math.max(0, (Date.now() - startMs) / 1000);
+            this.startPlayback(offsetSeconds);
+          } else {
+            this.updateCountdown(now, startMs);
+          }
+          this.cdr.detectChanges();
+        }, 500);
+      } else {
+        const offsetSeconds = Math.max(0, (Date.now() - startMs) / 1000);
+        this.startPlayback(offsetSeconds);
+      }
+
+      this.cdr.detectChanges();
+    },
+
+    error: (err) => {
+      if (err?.status === 410) {
+        this.setPremiereEndedUI();
+        return;
+      }
+
+      this.isPremiereVideo = false;
+      this.showChat = false;
+
+      this.chat.disconnect();
+      this.chatConnectedForVideoId = null;
+      this.chatMessages = [];
+
+      if (err?.status === 404) {
+        this.premiereActive = true;
+        this.premiereCountdown = 'Uskoro...';
+        this.premiereStartLocal = 'Zakazan video';
+      } else {
+        this.metaError = `Ne mogu da učitam watch info (${err?.status ?? '?'})`;
+      }
+      this.cdr.detectChanges();
+    },
+  });
+}
+
+
+private setPremiereEndedUI() {
+  this.clearTimers();
+  this.premiereActive = false;
+  this.premiereEnded = true;
+
+  this.noPause = false;
+  this.streamStartMs = null;
+
+  // najbitnije: ukloni src da player ne može da se pusti
+  this.src = '';
+
+  // ugasi chat
+  this.chat.disconnect();
+  this.chatConnectedForVideoId = null;
+  this.chatMessages = [];
+
+  this.cdr.detectChanges();
+}
+onEnded() {
+  // ako je premijera (tj. imamo streamStartMs) → označi ended i sakrij player
+  if (this.streamStartMs) {
+    this.setPremiereEndedUI();
+  }
+}
+
+
+
+private startSyncLoop(el: HTMLVideoElement, startMs: number) {
+  if (this.syncTimer) clearInterval(this.syncTimer);
+
+  this.syncTimer = setInterval(() => {
+    if (!el || el.readyState < 1) return;
+
+    const target = Math.max(0, (Date.now() - startMs) / 1000);
+    const drift = el.currentTime - target;
+
+    // ako si “pobegla” više od ~1.5s, vrati na tačan trenutak
+    if (Math.abs(drift) > 1.5) {
+      try { el.currentTime = target; } catch {}
+    }
+  }, 5000);
+}
+
+private updateCountdown(nowMs: number, startMs: number) {
+  const left = Math.max(0, startMs - nowMs);
+  const totalSec = Math.floor(left / 1000);
+
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+
+  const hh = h > 0 ? `${h}h ` : '';
+  this.premiereCountdown = `${hh}${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+private clearTimers() {
+  if (this.countdownTimer) {
+    clearInterval(this.countdownTimer);
+    this.countdownTimer = null;
+  }
+  if (this.syncTimer) {
+    clearInterval(this.syncTimer);
+    this.syncTimer = null;
+  }
+}
+
+private startPlayback(offsetSeconds: number) {
+  this.premiereActive = false;
+
+  if (this.id) {
+    this.src = this.videoService.streamUrl(this.id);
+  }
+
+  this.cdr.detectChanges();
+
+  setTimeout(() => {
+    const videoEl = this.playerRef?.nativeElement;
+    if (!videoEl) return;
+
+    try {
+      videoEl.currentTime = Math.max(0, offsetSeconds);
+    } catch {}
+
+    videoEl.muted = true;
+    const p = videoEl.play();
+    if (p && typeof (p as any).catch === 'function') {
+      p.catch(() => {});
+    }
+  }, 0);
+}
+
+onPause(ev: Event) {
+  if (!this.noPause) return; // ✅ obični videi mogu pauzu
+
+  const el = ev.target as HTMLVideoElement;
+  if (el.ended) return;
+
+  // vrati play odmah
+  setTimeout(() => {
+    try { el.play(); } catch {}
+  }, 0);
+}
+
+onSpace(ev: KeyboardEvent) {
+  if (!this.noPause) return;
+  ev.preventDefault(); // spreči space pause
+}
+
+private getAllowedTime(): number {
+  if (!this.streamStartMs) return Infinity;
+  return Math.max(0, (Date.now() - this.streamStartMs) / 1000);
+}
+
+
+
+onSeeking(player: HTMLVideoElement) {
+  if (!this.isPremiereLive()) return;
+
+  const allowed = this.getAllowedTime();
+  if (player.currentTime > allowed + 0.25) {
+    player.currentTime = allowed;
+  }
+}
+
+onTimeUpdate(player: HTMLVideoElement) {
+  if (!this.isPremiereLive()) return;
+
+  const allowed = this.getAllowedTime();
+  if (player.currentTime > allowed + 0.25) {
+    player.currentTime = allowed;
+  }
+}
+
+private isPremiereLive(): boolean {
+  return !!this.streamStartMs && !this.premiereEnded && Date.now() >= this.streamStartMs;
+}
+
+get hideComments(): boolean {
+  // 1) zakazan običan video
+  if (this.isScheduledVideo) return true;
+
+  // 2) premijera: nikad komentari
+  if (this.isPremiereVideo) return true;
+
+  return false;
+}
+
 
 }

@@ -79,6 +79,78 @@
                 <span class="tchip" *ngFor="let t of tagsList()">{{ t }}</span>
               </div>
             </div>
+ <!-- PREMIJERA -->
+
+
+  <!-- PREMIJERA -->
+<div class="field">
+  <label>Zakazani prikaz</label>
+
+  <div class="check-row">
+    <input
+      type="checkbox"
+      id="sch"
+      [(ngModel)]="scheduled"
+      (change)="onScheduledToggle()"
+    />
+    <label for="sch">Objavi kasnije (premijera)</label>
+  </div>
+
+  <div class="hint" *ngIf="scheduled">
+    Video neće biti dostupan drugim korisnicima pre zakazanog vremena.
+  </div>
+</div>
+
+<!-- SELECTI ZA VREME PREMIJERE -->
+<div class="premiere-row" *ngIf="scheduled">
+  <div class="field">
+    <label>Godina</label>
+    <select [(ngModel)]="premYear" (change)="onMonthYearChange()">
+      <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Mesec</label>
+    <select [(ngModel)]="premMonth" (change)="onMonthYearChange()">
+      <option *ngFor="let m of months" [ngValue]="m">{{ m }}</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Dan</label>
+    <select [(ngModel)]="premDay">
+      <option [ngValue]="null">—</option>
+      <option *ngFor="let d of days" [ngValue]="d">{{ d }}</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Sat</label>
+    <select [(ngModel)]="premHour">
+      <option [ngValue]="null">—</option>
+      <option *ngFor="let h of hours" [ngValue]="h">{{ h }}</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Min</label>
+    <select [(ngModel)]="premMinute">
+      <option [ngValue]="null">—</option>
+      <option *ngFor="let mi of minutes" [ngValue]="mi">
+        {{ (''+mi).padStart(2,'0') }}
+      </option>
+    </select>
+  </div>
+</div>
+
+<!-- prikaz izabranog vremena -->
+<div class="hint" style="margin-top: 8px" *ngIf="buildScheduledAtIso() as iso">
+  Izabrano: <b>{{ iso }}</b>
+</div>
+
+
+
           </div>
         </section>
 

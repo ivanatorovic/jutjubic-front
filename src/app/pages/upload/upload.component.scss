@@ -256,20 +256,10 @@ html, body {
 }
 
 
-@media (max-width: 860px) {
-  .grid { grid-template-columns: 1fr; }
-}
 
-@media (max-width: 520px) {
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-  }
 
-  .upload-btn {
-    width: 100%;
-  }
-}
+  
+
 .file-meta {
   display: flex;
   align-items: center;
@@ -366,5 +356,74 @@ html, body {
 .hint {
   margin-top: 6px;
   font-size: 12px;
+  opacity: 0.8;
+}
+/* PREMIJERA – vertikalno jedan ispod drugog */
+.prem-grid{
+  display: grid;
+  grid-template-columns: 1fr; /* JEDNA KOLONA */
+  gap: 10px;
+}
+
+/* label + select uredno */
+.prem-grid .field{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* manji, elegantniji select */
+.prem-grid .field select{
+  height: 38px;              /* MANJE */
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 12px;       /* blago zaobljeni */
+  padding: 8px 32px 8px 10px;
+}
+
+/* label malo diskretniji */
+.prem-grid .field label{
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+
+/* responsive: 3 u redu pa 2 u redu */
+@media (max-width: 900px){
+  .prem-grid{ grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px){
+  .prem-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+
+/* PREMIJERA – red ispod checkboxa */
+.premiere-row{
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap; /* da se lepo prelomi ako nema mesta */
+}
+
+/* svako polje neka bude samo koliko treba */
+.premiere-row .field{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* kompaktni select */
+.premiere-row .field select{
+  height: 34px;
+  min-width: 70px;
+  width: auto;              /* KLJUČNO */
+  padding: 6px 28px 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+/* labels sitnije */
+.premiere-row .field label{
+  font-size: 11px;
   opacity: 0.8;
 }

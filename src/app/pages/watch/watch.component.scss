@@ -499,3 +499,26 @@
 }
 
 .chat-hint { margin-top: 8px; font-size: 12px; opacity: .7; }
+
+.premiere {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 0, 51, 0.10);
+  border: 1px solid rgba(255, 0, 51, 0.25);
+}
+
+.prem-title {
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.prem-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba(255,255,255,.85);
+}
+
+.prem-sub.muted {
+  color: rgba(255,255,255,.65);
+}
