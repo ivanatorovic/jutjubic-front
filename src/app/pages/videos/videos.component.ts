@@ -148,20 +148,12 @@ async openUpload(): Promise<void> {
     this.router.navigate(['/videos']);
   }
 
-  isScheduledCard(v: any): boolean {
-  // najčešće varijante koje backend ume da šalje
-  const scheduledFlag = v?.scheduled === true;
-
-  const scheduledAt =
-    !!v?.scheduledAt || !!v?.scheduled_at || !!v?.scheduledAtLocal;
-
-  const premiereStatus =
-    v?.premiereStatus === 'SCHEDULED' || v?.status === 'SCHEDULED';
-
-  const streamStartFuture =
-    !!v?.streamStart && new Date(v.streamStart).getTime() > Date.now();
-
-  return scheduledFlag || scheduledAt || premiereStatus || streamStartFuture;
+isScheduledCard(v: any): boolean {
+  if (v?.scheduled === true) return true;
+  if (v?.scheduledAt || v?.scheduled_at || v?.scheduledAtLocal) return true;
+  if (v?.premiereStatus || v?.status) return true;
+  if (v?.streamStart) return true;
+  return false;
 }
 
 }

@@ -50,10 +50,12 @@ export class WatchComponent implements OnInit, OnDestroy {
   sideVideos: Video[] = [];
   sideLoading = false;
   sideError = '';
-  // CHAT
+
   chatText = '';
   chatMessages: StreamChatMessage[] = [];
   private chatConnectedForVideoId: number | null = null;
+  private metaRetriedAfterLive = false;
+
 
   private destroy$ = new Subject<void>();
 
@@ -96,16 +98,14 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.id = id;
       // (re)connect chat samo ako je novi video
       if (this.chatConnectedForVideoId !== id) {
-        this.chat.disconnect(); // prekini prethodni room ako si prešla na drugi video
+        this.chat.disconnect(); 
         this.chatConnectedForVideoId = id;
-
-        // reset poruka na UI-u (zahtev kaže: nema istorije)
         this.chatMessages = [];
+        this.metaRetriedAfterLive = false;
         this.cdr.detectChanges();
-
         this.chat.connect(id);
 
-        // subscribe na observable poruka (u trenutku ulaska vidiš samo nove)
+       
         this.chat.messages$.pipe(takeUntil(this.destroy$)).subscribe((msgs) => {
           this.chatMessages = msgs;
           this.cdr.detectChanges();
@@ -132,6 +132,7 @@ export class WatchComponent implements OnInit, OnDestroy {
     this.videoService.getById(id).subscribe({
       next: (v) => {
         this.video = v;
+        this.video.viewCount = (this.video.viewCount ?? 0) + 1;
         this.noPause = !!v.scheduled;
         this.metaLoading = false;
 
@@ -428,9 +429,8 @@ export class WatchComponent implements OnInit, OnDestroy {
     const content = this.chatText.trim();
     if (!content) return;
 
-    // ako hoćeš da samo ulogovani pišu:
+   
     if (!this.auth.isLoggedIn()) {
-      // možeš i da prikažeš poruku, ali bar blokiraj slanje
       return;
     }
 
@@ -443,14 +443,13 @@ export class WatchComponent implements OnInit, OnDestroy {
 
     this.videoService.watchInfo(id).subscribe({
       next: (info) => {
-        // ✅ premijera je ako postoji streamStart
+       
         const isPremiere = !!info.streamStart;
         this.isPremiereVideo = isPremiere;
 
-        // ✅ chat: premijera dok je SCHEDULED ili LIVE (ne posle)
         this.showChat = isPremiere && info.status !== 'ENDED';
 
-        // ✅ ako NIJE premijera -> ugasi chat i resetuj
+       
         if (!isPremiere) {
           this.premiereActive = false;
           this.premiereEnded = false;
@@ -467,14 +466,14 @@ export class WatchComponent implements OnInit, OnDestroy {
           return;
         }
 
-        // ✅ ako je premijera završena
+        
         if (info.status === 'ENDED') {
-          this.setPremiereEndedUI(); // ovo već gasi chat + src
+          this.setPremiereEndedUI(); 
           this.cdr.detectChanges();
           return;
         }
 
-        // ✅ premijera (SCHEDULED ili LIVE) -> CONNECT CHAT (samo ako treba da se vidi)
+        
         if (this.showChat && this.chatConnectedForVideoId !== id) {
           this.chat.disconnect();
           this.chatConnectedForVideoId = id;
@@ -490,14 +489,14 @@ export class WatchComponent implements OnInit, OnDestroy {
           });
         }
 
-        // ✅ sigurnosno: ako iz nekog razloga showChat postane false -> ugasi chat
+       
         if (!this.showChat && this.chatConnectedForVideoId !== null) {
           this.chat.disconnect();
           this.chatConnectedForVideoId = null;
           this.chatMessages = [];
         }
 
-        // --- tvoja postojeća logika za countdown/live sync ---
+      
         const serverNowMs = new Date(info.serverNow).getTime();
         const startMs = new Date(info.streamStart).getTime();
 
@@ -509,17 +508,19 @@ export class WatchComponent implements OnInit, OnDestroy {
         if (diffMs > 0) {
           this.premiereActive = true;
           this.premiereEnded = false;
-
-          // (opciono) popuni prikaz zakazanog vremena
-          this.premiereStartLocal = new Date(info.streamStart).toLocaleString();
-
           this.updateCountdown(serverNowMs, startMs);
 
           this.countdownTimer = setInterval(() => {
             const now = Date.now();
             if (now >= startMs) {
+              clearInterval(this.countdownTimer);
+              this.countdownTimer = null;
               const offsetSeconds = Math.max(0, (Date.now() - startMs) / 1000);
               this.startPlayback(offsetSeconds);
+              if (!this.metaRetriedAfterLive) {
+              this.metaRetriedAfterLive = true;
+              this.loadMeta(id);
+      }
             } else {
               this.updateCountdown(now, startMs);
             }
@@ -566,22 +567,30 @@ export class WatchComponent implements OnInit, OnDestroy {
     this.noPause = false;
     this.streamStartMs = null;
 
-    // najbitnije: ukloni src da player ne može da se pusti
+    
     this.src = '';
 
-    // ugasi chat
+   
     this.chat.disconnect();
     this.chatConnectedForVideoId = null;
     this.chatMessages = [];
 
     this.cdr.detectChanges();
   }
+  
   onEnded() {
-    // ako je premijera (tj. imamo streamStartMs) → označi ended i sakrij player
-    if (this.streamStartMs) {
-      this.setPremiereEndedUI();
-    }
+  if (this.streamStartMs && this.id) {
+    this.videoService.markPremiereEnded(this.id).subscribe({
+      next: () => {
+        this.setPremiereEndedUI();
+      },
+      error: () => {
+        this.setPremiereEndedUI();
+      }
+    });
   }
+}
+
 
   private startSyncLoop(el: HTMLVideoElement, startMs: number) {
     if (this.syncTimer) clearInterval(this.syncTimer);
@@ -592,7 +601,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       const target = Math.max(0, (Date.now() - startMs) / 1000);
       const drift = el.currentTime - target;
 
-      // ako si “pobegla” više od ~1.5s, vrati na tačan trenutak
+   
       if (Math.abs(drift) > 1.5) {
         try {
           el.currentTime = target;
@@ -649,12 +658,12 @@ export class WatchComponent implements OnInit, OnDestroy {
   }
 
   onPause(ev: Event) {
-    if (!this.noPause) return; // ✅ obični videi mogu pauzu
+    if (!this.noPause) return; 
 
     const el = ev.target as HTMLVideoElement;
     if (el.ended) return;
 
-    // vrati play odmah
+    
     setTimeout(() => {
       try {
         el.play();
@@ -664,7 +673,7 @@ export class WatchComponent implements OnInit, OnDestroy {
 
   onSpace(ev: KeyboardEvent) {
     if (!this.noPause) return;
-    ev.preventDefault(); // spreči space pause
+    ev.preventDefault(); 
   }
 
   private getAllowedTime(): number {
@@ -695,12 +704,17 @@ export class WatchComponent implements OnInit, OnDestroy {
   }
 
   get hideComments(): boolean {
-    // 1) zakazan običan video
+  
     if (this.isScheduledVideo) return true;
 
-    // 2) premijera: nikad komentari
+   
     if (this.isPremiereVideo) return true;
 
     return false;
   }
+
+  get hideStats(): boolean {
+  return !!this.video?.scheduled || this.premiereActive || this.isPremiereVideo;
+}
+
 }

@@ -34,15 +34,15 @@
         <div class="premiere" *ngIf="premiereActive">
           <div class="prem-title">Premijera</div>
           <div class="prem-sub">
-            Počinje u: <b>{{ premiereCountdown }}</b>
+            Počinje za: <b>{{ premiereCountdown }}</b>
           </div>
-          <div class="prem-sub muted">Zakazano: {{ premiereStartLocal }}</div>
+          <div class="prem-sub muted">Zakazano {{ premiereStartLocal }}</div>
         </div>
 
-        <!-- ✅ 1) poruka kad je premijera završena -->
+      
         <div class="ended-screen" *ngIf="premiereEnded">Premijera je završena</div>
 
-        <!-- ✅ 2) player se prikazuje samo ako nije countdown i nije ended -->
+      
         <div class="player-wrap" *ngIf="src && !premiereActive && !premiereEnded">
           <video
             #player
@@ -102,7 +102,7 @@
               </div>
             </div>
 
-            <div class="stats">
+            <div class="stats"  *ngIf="!hideStats">
               <div class="views">{{ v.viewCount ?? 0 }} pregleda</div>
 
               <div class="stats-chips">

@@ -117,6 +117,9 @@ watchInfo(id: number) {
   return this.http.get<WatchInfoDto>(`${environment.apiUrl}/api/videos/${id}/watch-info`);
 }
 
+markPremiereEnded(id: number) {
+  return this.http.post<void>(`${environment.apiUrl}/api/videos/${id}/premiere-ended`, {});
+}
 
 
 }
