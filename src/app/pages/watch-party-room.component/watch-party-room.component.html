@@ -1,0 +1,117 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+
+    <div class="top-actions">
+      <ng-container *ngIf="!isLoggedIn(); else logged">
+        <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
+        <button type="button" class="btn primary" routerLink="/register">Registracija</button>
+      </ng-container>
+
+      <ng-template #logged>
+        <button class="btn primary" (click)="logout()">Logout</button>
+      </ng-template>
+    </div>
+  </header>
+
+  <main class="content">
+    <div *ngIf="loading" class="state">Učitavam sobu…</div>
+    <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+    <ng-container *ngIf="!loading && room as r">
+      <div class="layout">
+        <!-- LEFT: members -->
+        <aside class="sidebar">
+          <div class="side-title">Članovi</div>
+
+          <div class="side-sub">
+            Ukupno: <b>{{ r.memberCount }}</b>
+          </div>
+
+          <div class="members" *ngIf="members.length > 0; else noMembers">
+            <div class="member" *ngFor="let m of members">
+              <div class="avatar">{{ (m.username || '?')[0] | uppercase }}</div>
+
+              <div class="mmeta">
+                <div class="mname">
+                  {{ m.username }}
+                  <span class="badge host" *ngIf="m.userId === r.hostUserId">HOST</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noMembers>
+            <div class="state mini">Još nema članova.</div>
+          </ng-template>
+        </aside>
+
+        <!-- RIGHT: existing content -->
+        <section class="maincol">
+          <div class="head">
+            <div class="head-left">
+              <h1 class="title">Soba {{ r.roomId }}</h1>
+              <div class="sub">
+                Kreirao: <b>{{ r.hostUsername }}</b>
+              </div>
+            </div>
+
+            <div class="head-right">
+              <button type="button" class="btn join-btn" (click)="join()">Join</button>
+
+              <!-- ✅ Private: invite link (ostavljeno kao što ti je bilo) -->
+              <div *ngIf="!r.isPublic" class="invite">
+                <div class="invite-label">Invite link</div>
+                <div class="invite-row">
+                  <input class="invite-input" [value]="inviteLink" readonly />
+                  <button type="button" class="btn wp-btn" (click)="copyInvite()">
+                    {{ copied ? 'Kopirano ' : 'Copy' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chips">
+            <span class="chip green"
+              >👥 Broj članova: <b>{{ r.memberCount }}</b></span
+            >
+            <span class="chip"
+              >🎞️ Broj videa: <b>{{ r.videoCount }}</b></span
+            >
+            <span class="chip">{{ r.isPublic ? '🔓 Javno' : '🔒 Privatno' }}</span>
+          </div>
+
+          <div class="state mini" *ngIf="joinHint">{{ joinHint }}</div>
+
+          <h2 class="section-title">Videi u sobi</h2>
+
+          <div class="state" *ngIf="videos.length === 0">Nema videa u sobi.</div>
+
+          <div class="video-list" *ngIf="videos.length > 0">
+            <article
+              class="video-card"
+              *ngFor="let v of videos"
+              (click)="onVideoClick(v.id)"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="onVideoClick(v.id)"
+            >
+              <img class="thumb" [src]="thumbnailUrl(v.id)" alt="" />
+              <div class="vmeta">
+                <div class="vtitle">{{ v.title }}</div>
+              </div>
+
+              <div class="right-flag" *ngIf="isHost">HOST</div>
+            </article>
+
+            <div class="state error mini" *ngIf="startError">{{ startError }}</div>
+          </div>
+        </section>
+      </div>
+    </ng-container>
+  </main>
+</div>

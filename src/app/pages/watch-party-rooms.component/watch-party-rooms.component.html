@@ -1,0 +1,122 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+
+    <div class="top-actions">
+      <ng-container *ngIf="!isLoggedIn(); else logged">
+        <button type="button" class="btn ghost" routerLink="/login">Prijava</button>
+        <button type="button" class="btn primary" routerLink="/register">Registracija</button>
+      </ng-container>
+
+      <ng-template #logged>
+        <button
+          class="btn ghost"
+          *ngIf="currentUserId !== null"
+          [routerLink]="['/user-profile', currentUserId]"
+        >
+          Profil
+        </button>
+
+        <button class="btn primary" (click)="logout()">Logout</button>
+      </ng-template>
+    </div>
+  </header>
+
+  <main class="content">
+    <h1 class="headline">Gledajte videe u party režimu</h1>
+
+    <div *ngIf="loading" class="state">Učitavam sobe...</div>
+    <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+    <div class="list" *ngIf="!loading && !error">
+      <article
+        class="card wide"
+        *ngFor="let r of rooms"
+        (click)="openRoom(r.roomId)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="openRoom(r.roomId)"
+        (keydown.space)="openRoom(r.roomId)"
+      >
+        <div class="thumb-wrap">
+          <div class="room-hero">
+            <div class="room-badge">Watch Party</div>
+            <div class="room-code">{{ r.roomId }}</div>
+          </div>
+        </div>
+
+        <div class="info">
+          <div class="title" [title]="'Soba ' + r.roomId">Soba {{ r.roomId }}</div>
+
+          <div class="sub-row">
+            <!-- LEVO: host -->
+            <div class="sub-left">
+              <span class="user" (click)="openUser(r.hostUserId, $event)" role="link" tabindex="0">
+                <span class="avatar">
+                  {{ (r.hostUsername ?? '?').slice(0, 1).toUpperCase() }}
+                </span>
+                <span class="uname">{{ r.hostUsername ?? 'User #' + r.hostUserId }}</span>
+              </span>
+            </div>
+
+            <!-- DESNO: statistika -->
+            <div class="sub-right">
+              <span class="members"> 👥 Broj članova: {{ r.memberCount ?? 0 }} </span>
+              <span class="videos"> 🎞️ Broj videa: {{ r.videoCount ?? 0 }} </span>
+            </div>
+          </div>
+
+          <div class="stats">
+            <span class="chip">
+              {{ r.isPublic ? '🔓 Javno' : '🔒 Privatno' }}
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <div *ngIf="rooms.length === 0" class="state">Nema soba još.</div>
+
+      <!-- ✅ dugme UVEK na dnu, ispod liste -->
+      <div class="center-actions">
+        <!-- kad panel nije otvoren -->
+        <button
+          *ngIf="!createPanelOpen"
+          type="button"
+          class="btn wp-btn"
+          (click)="openCreatePanel()"
+        >
+          <span class="wp-plus">＋</span>
+          Napravi novu sobu
+        </button>
+
+        <!-- kad je panel otvoren -->
+        <div class="create-panel" *ngIf="createPanelOpen">
+          <div class="radio-row">
+            <label class="radio">
+              <input type="radio" name="pub" [value]="true" [(ngModel)]="isPublicSelected" />
+              <span class="dot"></span>
+              Javna
+            </label>
+
+            <label class="radio">
+              <input type="radio" name="pub" [value]="false" [(ngModel)]="isPublicSelected" />
+              <span class="dot"></span>
+              Privatna
+            </label>
+          </div>
+
+          <div class="panel-actions">
+            <button type="button" class="btn ghost" (click)="cancelCreate()">Otkaži</button>
+
+            <button type="button" class="btn wp-btn" (click)="confirmCreateRoom()">Kreiraj</button>
+          </div>
+        </div>
+
+        <div class="state error mini" *ngIf="createError">{{ createError }}</div>
+      </div>
+    </div>
+  </main>
+</div>

@@ -9,6 +9,11 @@ import { FormsModule } from '@angular/forms';
 import { StreamChatService } from '../../services/stream-chat-service/stream-chat.service';
 import { StreamChatMessage } from '../../model/stream-chat-message';
 import { ViewChild, ElementRef } from '@angular/core';
+import {
+  WatchPartyService,
+  WatchPartyRoomPublic,
+} from '../../services/watch-party-service/watch-party-service';
+import { LocalTrendingService } from '../../services/local-trending-service/local-trending.service';
 
 @Component({
   selector: 'app-watch',
@@ -56,7 +61,6 @@ export class WatchComponent implements OnInit, OnDestroy {
   private chatConnectedForVideoId: number | null = null;
   private metaRetriedAfterLive = false;
 
-
   private destroy$ = new Subject<void>();
 
   premiereActive = false;
@@ -68,6 +72,17 @@ export class WatchComponent implements OnInit, OnDestroy {
   isPremiereVideo = false;
   showChat = false;
   isScheduledVideo = false;
+
+  // Watch Party UI
+  partyPickerOpen = false;
+  myRooms: WatchPartyRoomPublic[] = [];
+  roomsLoading = false;
+  roomsError = '';
+
+  addToPartyBusy = false;
+  addToPartyError = '';
+  addedToParty = false; // zaključava dugme posle uspeha
+  addedRoomId: string | null = null;
 
   private streamStartMs: number | null = null;
   private countdownTimer: any = null;
@@ -81,6 +96,8 @@ export class WatchComponent implements OnInit, OnDestroy {
     private router: Router,
     private auth: AuthService,
     private chat: StreamChatService,
+    private wp: WatchPartyService,
+    private trendingService: LocalTrendingService,
   ) {}
 
   ngOnInit(): void {
@@ -98,14 +115,13 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.id = id;
       // (re)connect chat samo ako je novi video
       if (this.chatConnectedForVideoId !== id) {
-        this.chat.disconnect(); 
+        this.chat.disconnect();
         this.chatConnectedForVideoId = id;
         this.chatMessages = [];
         this.metaRetriedAfterLive = false;
         this.cdr.detectChanges();
         this.chat.connect(id);
 
-       
         this.chat.messages$.pipe(takeUntil(this.destroy$)).subscribe((msgs) => {
           this.chatMessages = msgs;
           this.cdr.detectChanges();
@@ -429,7 +445,6 @@ export class WatchComponent implements OnInit, OnDestroy {
     const content = this.chatText.trim();
     if (!content) return;
 
-   
     if (!this.auth.isLoggedIn()) {
       return;
     }
@@ -443,13 +458,11 @@ export class WatchComponent implements OnInit, OnDestroy {
 
     this.videoService.watchInfo(id).subscribe({
       next: (info) => {
-       
         const isPremiere = !!info.streamStart;
         this.isPremiereVideo = isPremiere;
 
         this.showChat = isPremiere && info.status !== 'ENDED';
 
-       
         if (!isPremiere) {
           this.premiereActive = false;
           this.premiereEnded = false;
@@ -466,14 +479,12 @@ export class WatchComponent implements OnInit, OnDestroy {
           return;
         }
 
-        
         if (info.status === 'ENDED') {
-          this.setPremiereEndedUI(); 
+          this.setPremiereEndedUI();
           this.cdr.detectChanges();
           return;
         }
 
-        
         if (this.showChat && this.chatConnectedForVideoId !== id) {
           this.chat.disconnect();
           this.chatConnectedForVideoId = id;
@@ -489,14 +500,12 @@ export class WatchComponent implements OnInit, OnDestroy {
           });
         }
 
-       
         if (!this.showChat && this.chatConnectedForVideoId !== null) {
           this.chat.disconnect();
           this.chatConnectedForVideoId = null;
           this.chatMessages = [];
         }
 
-      
         const serverNowMs = new Date(info.serverNow).getTime();
         const startMs = new Date(info.streamStart).getTime();
 
@@ -518,9 +527,9 @@ export class WatchComponent implements OnInit, OnDestroy {
               const offsetSeconds = Math.max(0, (Date.now() - startMs) / 1000);
               this.startPlayback(offsetSeconds);
               if (!this.metaRetriedAfterLive) {
-              this.metaRetriedAfterLive = true;
-              this.loadMeta(id);
-      }
+                this.metaRetriedAfterLive = true;
+                this.loadMeta(id);
+              }
             } else {
               this.updateCountdown(now, startMs);
             }
@@ -567,30 +576,27 @@ export class WatchComponent implements OnInit, OnDestroy {
     this.noPause = false;
     this.streamStartMs = null;
 
-    
     this.src = '';
 
-   
     this.chat.disconnect();
     this.chatConnectedForVideoId = null;
     this.chatMessages = [];
 
     this.cdr.detectChanges();
   }
-  
-  onEnded() {
-  if (this.streamStartMs && this.id) {
-    this.videoService.markPremiereEnded(this.id).subscribe({
-      next: () => {
-        this.setPremiereEndedUI();
-      },
-      error: () => {
-        this.setPremiereEndedUI();
-      }
-    });
-  }
-}
 
+  onEnded() {
+    if (this.streamStartMs && this.id) {
+      this.videoService.markPremiereEnded(this.id).subscribe({
+        next: () => {
+          this.setPremiereEndedUI();
+        },
+        error: () => {
+          this.setPremiereEndedUI();
+        },
+      });
+    }
+  }
 
   private startSyncLoop(el: HTMLVideoElement, startMs: number) {
     if (this.syncTimer) clearInterval(this.syncTimer);
@@ -601,7 +607,6 @@ export class WatchComponent implements OnInit, OnDestroy {
       const target = Math.max(0, (Date.now() - startMs) / 1000);
       const drift = el.currentTime - target;
 
-   
       if (Math.abs(drift) > 1.5) {
         try {
           el.currentTime = target;
@@ -658,12 +663,11 @@ export class WatchComponent implements OnInit, OnDestroy {
   }
 
   onPause(ev: Event) {
-    if (!this.noPause) return; 
+    if (!this.noPause) return;
 
     const el = ev.target as HTMLVideoElement;
     if (el.ended) return;
 
-    
     setTimeout(() => {
       try {
         el.play();
@@ -673,7 +677,7 @@ export class WatchComponent implements OnInit, OnDestroy {
 
   onSpace(ev: KeyboardEvent) {
     if (!this.noPause) return;
-    ev.preventDefault(); 
+    ev.preventDefault();
   }
 
   private getAllowedTime(): number {
@@ -704,17 +708,134 @@ export class WatchComponent implements OnInit, OnDestroy {
   }
 
   get hideComments(): boolean {
-  
     if (this.isScheduledVideo) return true;
 
-   
     if (this.isPremiereVideo) return true;
 
     return false;
   }
-
   get hideStats(): boolean {
-  return !!this.video?.scheduled || this.premiereActive || this.isPremiereVideo;
-}
+    return !!this.video?.scheduled || this.premiereActive || this.isPremiereVideo;
+  }
 
+  async openTrending(): Promise<void> {
+    // odmah otvori trending (fallback)
+    await this.router.navigate(['/trending']);
+
+    const loc = await this.trendingService.getBrowserLocation(10000);
+
+    if (loc) {
+      await this.router.navigate(['/trending'], {
+        queryParams: { lat: loc.lat, lon: loc.lon },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
+  } // ✅ Upload klik = user gesture -> browser popup za lokaciju (allow/block)
+  // ✅ Upload klik: prvo otvori /upload (bez čekanja), pa onda traži lokaciju
+  async openUpload(): Promise<void> {
+    // 1) odmah otvori upload stranicu
+    await this.router.navigate(['/upload'], { replaceUrl: true });
+
+    // 2) tek onda pokušaj da dobiješ lokaciju (popup će se pojaviti sad)
+    const loc = await this.trendingService.getBrowserLocation(10000);
+
+    // 3) update URL sa parametrima (ne menja stranicu, samo query)
+    await this.router.navigate([], {
+      queryParams: loc
+        ? { lat: loc.lat, lon: loc.lon, locAllowed: 1 }
+        : { lat: null, lon: null, locAllowed: 0 },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  async openWatchPartyRooms(): Promise<void> {
+    await this.router.navigate(['/watch-party-rooms']);
+  }
+
+  openPartyPicker(ev?: Event) {
+    ev?.stopPropagation();
+    ev?.preventDefault();
+
+    // ako je već dodato, ne otvaraj ponovo
+    if (this.addedToParty) {
+      this.addToPartyError = this.addedRoomId
+        ? `Video je već dodat u sobu ${this.addedRoomId}.`
+        : `Video je već dodat u Watch Party sobu.`;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (!this.isLoggedIn()) {
+      this.addToPartyError = 'Moraš biti ulogovan da dodaš video u Watch Party.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.partyPickerOpen = true;
+    this.addToPartyError = '';
+    this.roomsError = '';
+    this.cdr.detectChanges();
+
+    this.loadMyRooms();
+  }
+
+  closePartyPicker() {
+    this.partyPickerOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  private loadMyRooms() {
+    this.roomsLoading = true;
+    this.roomsError = '';
+    this.cdr.detectChanges();
+
+    this.wp.myRooms().subscribe({
+      next: (rooms: WatchPartyRoomPublic[]) => {
+        this.myRooms = rooms ?? [];
+        this.roomsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.roomsError = `Ne mogu da učitam tvoje sobe (${err?.status ?? '?'})`;
+        this.roomsLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  addCurrentVideoToRoom(roomId: string) {
+    if (!this.id) return;
+    if (this.addToPartyBusy) return;
+
+    this.addToPartyBusy = true;
+    this.addToPartyError = '';
+    this.cdr.detectChanges();
+
+    this.wp.addVideo(roomId, this.id).subscribe({
+      next: (_) => {
+        this.addToPartyBusy = false;
+        this.addedToParty = true;
+        this.addedRoomId = roomId;
+        this.partyPickerOpen = false;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.addToPartyBusy = false;
+
+        if (err?.status === 409) {
+          this.addToPartyError = 'Ovaj video je već dodat u izabranu sobu.';
+        } else if (err?.status === 401) {
+          this.addToPartyError = 'Moraš biti ulogovan.';
+        } else if (err?.status === 403) {
+          this.addToPartyError = 'Samo host može da dodaje videe u sobu.';
+        } else {
+          this.addToPartyError = `Ne mogu da dodam video (${err?.status ?? '?'})`;
+        }
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
 }

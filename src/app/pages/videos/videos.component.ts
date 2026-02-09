@@ -31,24 +31,22 @@ export class VideosComponent implements OnInit, OnDestroy {
     private router: Router,
     private uploadProgress: UploadProgressService,
     private auth: AuthService,
-    private trendingService: LocalTrendingService
+    private trendingService: LocalTrendingService,
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.auth.getUserIdFromToken();
 
-    this.uploadProgress.state$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((s) => {
-        this.uploadState = s;
+    this.uploadProgress.state$.pipe(takeUntil(this.destroy$)).subscribe((s) => {
+      this.uploadState = s;
 
-        if (s.status === 'done') {
-          this.load();
-          setTimeout(() => this.uploadProgress.clear(), 3000);
-        }
+      if (s.status === 'done') {
+        this.load();
+        setTimeout(() => this.uploadProgress.clear(), 3000);
+      }
 
-        this.cdr.detectChanges();
-      });
+      this.cdr.detectChanges();
+    });
 
     this.load();
   }
@@ -79,38 +77,40 @@ export class VideosComponent implements OnInit, OnDestroy {
 
   // ✅ Trending klik = user gesture -> browser popup za lokaciju
   async openTrending(): Promise<void> {
-  // odmah otvori trending (fallback)
-  await this.router.navigate(['/trending']);
+    // odmah otvori trending (fallback)
+    await this.router.navigate(['/trending']);
 
-  const loc = await this.trendingService.getBrowserLocation(10000);
+    const loc = await this.trendingService.getBrowserLocation(10000);
 
-  if (loc) {
-    await this.router.navigate(['/trending'], {
-      queryParams: { lat: loc.lat, lon: loc.lon },
+    if (loc) {
+      await this.router.navigate(['/trending'], {
+        queryParams: { lat: loc.lat, lon: loc.lon },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
+  } // ✅ Upload klik = user gesture -> browser popup za lokaciju (allow/block)
+  // ✅ Upload klik: prvo otvori /upload (bez čekanja), pa onda traži lokaciju
+  async openUpload(): Promise<void> {
+    // 1) odmah otvori upload stranicu
+    await this.router.navigate(['/upload'], { replaceUrl: true });
+
+    // 2) tek onda pokušaj da dobiješ lokaciju (popup će se pojaviti sad)
+    const loc = await this.trendingService.getBrowserLocation(10000);
+
+    // 3) update URL sa parametrima (ne menja stranicu, samo query)
+    await this.router.navigate([], {
+      queryParams: loc
+        ? { lat: loc.lat, lon: loc.lon, locAllowed: 1 }
+        : { lat: null, lon: null, locAllowed: 0 },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
   }
-}// ✅ Upload klik = user gesture -> browser popup za lokaciju (allow/block)
-// ✅ Upload klik: prvo otvori /upload (bez čekanja), pa onda traži lokaciju
-async openUpload(): Promise<void> {
-  // 1) odmah otvori upload stranicu
-  await this.router.navigate(['/upload'], { replaceUrl: true });
 
-  // 2) tek onda pokušaj da dobiješ lokaciju (popup će se pojaviti sad)
-  const loc = await this.trendingService.getBrowserLocation(10000);
-
-  // 3) update URL sa parametrima (ne menja stranicu, samo query)
-  await this.router.navigate([], {
-    queryParams: loc
-      ? { lat: loc.lat, lon: loc.lon, locAllowed: 1 }
-      : { lat: null, lon: null, locAllowed: 0 },
-    queryParamsHandling: 'merge',
-    replaceUrl: true,
-  });
-}
-
-
+  async openWatchPartyRooms(): Promise<void> {
+    await this.router.navigate(['/watch-party-rooms']);
+  }
 
   openWatch(id: number) {
     this.router.navigate(['/watch', id]);
@@ -148,12 +148,11 @@ async openUpload(): Promise<void> {
     this.router.navigate(['/videos']);
   }
 
-isScheduledCard(v: any): boolean {
-  if (v?.scheduled === true) return true;
-  if (v?.scheduledAt || v?.scheduled_at || v?.scheduledAtLocal) return true;
-  if (v?.premiereStatus || v?.status) return true;
-  if (v?.streamStart) return true;
-  return false;
-}
-
+  isScheduledCard(v: any): boolean {
+    if (v?.scheduled === true) return true;
+    if (v?.scheduledAt || v?.scheduled_at || v?.scheduledAtLocal) return true;
+    if (v?.premiereStatus || v?.status) return true;
+    if (v?.streamStart) return true;
+    return false;
+  }
 }
