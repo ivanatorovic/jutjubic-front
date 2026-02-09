@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 
+export type PremiereStatus = 'SCHEDULED' | 'LIVE' | 'ENDED';
 export interface Video {
   id: number;
   title: string;
@@ -23,6 +24,9 @@ export interface Video {
   scheduled?: boolean;
 scheduledAt?: string; 
 
+ durationSeconds?: number | null;
+  status?: PremiereStatus | null;
+
 }
 
 export interface CommentPublicDto {
@@ -41,7 +45,7 @@ export interface PageResponse<T> {
   first: boolean;
   last: boolean;
 }
-export type PremiereStatus = 'SCHEDULED' | 'LIVE' | 'ENDED';
+
 export interface WatchInfoDto {
   serverNow: string;    
   streamStart: string;  

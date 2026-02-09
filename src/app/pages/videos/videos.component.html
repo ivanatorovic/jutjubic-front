@@ -54,10 +54,75 @@
   <div *ngIf="loading" class="state">Učitavam videe...</div>
   <div *ngIf="!loading && error" class="state error">{{ error }}</div>
 
+ 
+<section class="popular-section" *ngIf="isLoggedIn() && !loading && !error && popularVideos.length > 0">
+
+  <div class="popular-head">
+    <h2 class="popular-title">Najpopularnije (top 3)</h2>
+  
+  </div>
+
+  <div class="popular-grid">
+    <article
+      class="card popular-card"
+      *ngFor="let v of popularVideos"
+      (click)="openWatch(v.id)"
+      role="button"
+      tabindex="0"
+      (keydown.enter)="openWatch(v.id)"
+      (keydown.space)="openWatch(v.id)"
+    >
+      <div class="thumb-wrap">
+        <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
+        <div class="play-overlay">▶</div>
+
+    
+        <div class="rank-badge">#{{ rankOf(v.id) }}</div>
+   <div class="status-badge"
+     *ngIf="v.status"
+     [ngClass]="v.status.toLowerCase()">
+  {{ statusLabel(v.status) }}
+</div>
+
+      </div>
+
+      <div class="info">
+        <div class="title" [title]="v.title">{{ v.title }}</div>
+
+        <div class="sub">
+          <span
+            class="user"
+            (click)="openUser(v.userId, $event)"
+            role="link"
+            tabindex="0"
+            (keydown.enter)="openUser(v.userId, $event)"
+          >
+            <span class="avatar">
+              {{ (v.username ?? '?').slice(0, 1).toUpperCase() }}
+            </span>
+            <span class="uname">{{ v.username ?? 'Nepoznat autor' }}</span>
+          </span>
+
+          <span class="dot">•</span>
+          <span class="time">{{ formatTime(v.createdAt) }}</span>
+          <div class="location" *ngIf="v.location && v.location.trim()">📍 {{ v.location }}</div>
+        </div>
+
+        <div class="stats" *ngIf="!isScheduledCard(v)">
+          <span class="chip">👁️ {{ v.viewCount ?? 0 }}</span>
+          <span class="chip">👍 {{ v.likeCount ?? 0 }}</span>
+          <span class="chip">💬 {{ v.commentCount ?? 0 }}</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+
   <div class="grid" *ngIf="!loading && !error">
     <article
       class="card"
-      *ngFor="let v of videos"
+      *ngFor="let v of videos "
       (click)="openWatch(v.id)"
       role="button"
       tabindex="0"
@@ -68,7 +133,13 @@
         <img class="thumb" [src]="videoService.thumbnailUrl(v.id)" alt="thumbnail" />
 
         <div class="play-overlay">▶</div>
+           <div class="status-badge"
+     *ngIf="v.status"
+     [ngClass]="v.status.toLowerCase()">
+  {{ statusLabel(v.status) }}
       </div>
+    
+</div>
 
       <div class="info">
         <div class="title" [title]="v.title">{{ v.title }}</div>
@@ -102,6 +173,7 @@
       
     </article>
 
-    <div *ngIf="videos.length === 0" class="state">Nema videa još.</div>
+<div *ngIf="otherVideos.length === 0" class="state">Nema videa još.</div>
+
   </div>
 </div>

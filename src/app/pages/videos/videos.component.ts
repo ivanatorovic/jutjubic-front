@@ -8,6 +8,12 @@ import { Video, VideoService } from '../../services/video-service/video';
 import { UploadProgressService, UploadState } from '../../services/upload-progress.service';
 import { AuthService } from '../../services/auth-service/auth.service';
 import { LocalTrendingService } from '../../services/local-trending-service/local-trending.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { PopularityService } from '../../services/popularity-service/popularity.service';
+import type { PopularBlockDto, PopularVideoDto } from '../../services/popularity-service/popularity.service';
+
+
 
 @Component({
   selector: 'app-videos',
@@ -21,6 +27,10 @@ export class VideosComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   uploadState: UploadState = { status: 'idle' };
+  popularVideos: Video[] = [];
+otherVideos: Video[] = [];
+popularRunAt: string | null = null;
+popularIds: number[] = []; 
 
   private destroy$ = new Subject<void>();
   currentUserId: number | null = null;
@@ -31,7 +41,9 @@ export class VideosComponent implements OnInit, OnDestroy {
     private router: Router,
     private uploadProgress: UploadProgressService,
     private auth: AuthService,
-    private trendingService: LocalTrendingService
+    private trendingService: LocalTrendingService,
+    private popularity: PopularityService
+
   ) {}
 
   ngOnInit(): void {
@@ -59,29 +71,66 @@ export class VideosComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
-    this.loading = true;
-    this.error = '';
-    this.cdr.detectChanges();
+  this.loading = true;
+  this.error = '';
+  this.cdr.detectChanges();
 
-    this.videoService.getAll().subscribe({
-      next: (data) => {
-        this.videos = data ?? [];
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = `Greška (${err?.status ?? ''})`;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-    });
-  }
+  forkJoin({
+    all: this.videoService.getAll(),
+    popular: this.popularity.latest().pipe(
+      catchError(() => of(null as PopularBlockDto | null)) // 404 ako ETL nije pokrenut
+    ),
+  }).subscribe({
+   next: ({ all, popular }) => {
+  const allVideos = (all ?? []) as Video[];
 
-  // ✅ Trending klik = user gesture -> browser popup za lokaciju
+
+
+  const popularIds: number[] =
+    (popular?.top3 ?? []).map((p: PopularVideoDto) => p.videoId);
+
+  this.popularIds = popularIds;
+  this.popularRunAt = popular?.runAt ?? null;
+
+  const byId = new Map<number, Video>(
+    allVideos.map((v: Video) => [v.id, v])
+  );
+
+  this.popularVideos = popularIds
+    .map((id: number) => byId.get(id))
+    .filter((v): v is Video => !!v);
+
+  const popularSet = new Set<number>(
+    this.popularVideos.map((v: Video) => v.id)
+  );
+
+  this.otherVideos = allVideos.filter(
+    (v: Video) => !popularSet.has(v.id)
+  );
+
+  this.videos = allVideos;
+
+  this.loading = false;
+  this.cdr.detectChanges();
+}
+,
+    error: (err) => {
+      this.error = `Greška (${err?.status ?? ''})`;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  });
+}
+
+rankOf(videoId: number): number {
+  const i = this.popularIds.indexOf(videoId);
+  return i >= 0 ? i + 1 : 0;
+}
+
+ 
   async openTrending(): Promise<void> {
-  // odmah otvori trending (fallback)
-  await this.router.navigate(['/trending']);
 
+  await this.router.navigate(['/trending']);
   const loc = await this.trendingService.getBrowserLocation(10000);
 
   if (loc) {
@@ -91,16 +140,15 @@ export class VideosComponent implements OnInit, OnDestroy {
       replaceUrl: true,
     });
   }
-}// ✅ Upload klik = user gesture -> browser popup za lokaciju (allow/block)
-// ✅ Upload klik: prvo otvori /upload (bez čekanja), pa onda traži lokaciju
+}
 async openUpload(): Promise<void> {
-  // 1) odmah otvori upload stranicu
+
   await this.router.navigate(['/upload'], { replaceUrl: true });
 
-  // 2) tek onda pokušaj da dobiješ lokaciju (popup će se pojaviti sad)
+
   const loc = await this.trendingService.getBrowserLocation(10000);
 
-  // 3) update URL sa parametrima (ne menja stranicu, samo query)
+
   await this.router.navigate([], {
     queryParams: loc
       ? { lat: loc.lat, lon: loc.lon, locAllowed: 1 }
@@ -149,11 +197,17 @@ async openUpload(): Promise<void> {
   }
 
 isScheduledCard(v: any): boolean {
-  if (v?.scheduled === true) return true;
-  if (v?.scheduledAt || v?.scheduled_at || v?.scheduledAtLocal) return true;
-  if (v?.premiereStatus || v?.status) return true;
-  if (v?.streamStart) return true;
-  return false;
+  const s = v?.status;
+  return s === 'SCHEDULED' || s === 'LIVE' || s === 'ENDED';
+}
+
+statusLabel(status: 'SCHEDULED' | 'LIVE' | 'ENDED'): string {
+  switch (status) {
+    case 'SCHEDULED': return 'ZAKAZANO';
+    case 'LIVE': return 'LIVE';
+    case 'ENDED': return 'ZAVRŠENO';
+    default: return '';
+  }
 }
 
 }
