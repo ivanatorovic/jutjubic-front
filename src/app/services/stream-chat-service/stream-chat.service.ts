@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Client, IMessage, Stomp } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+import { Client, IMessage } from '@stomp/stompjs';
 import { BehaviorSubject } from 'rxjs';
 import { StreamChatMessage } from '../../model/stream-chat-message';
-
 import { environment } from '../../../environments/environment';
-
 
 @Injectable({ providedIn: 'root' })
 export class StreamChatService {
@@ -15,37 +12,34 @@ export class StreamChatService {
   messages$ = this.messagesSubject.asObservable();
 
   connect(videoId: number, onConnected?: () => void) {
- const wsUrl = environment.apiUrl.replace(/\/$/, '') + '/ws';
+    const base = environment.apiUrl.replace(/\/$/, ''); // npr http://localhost:8080
+    const ws = base.replace(/^http/, 'ws') + '/ws'; // ws://localhost:8080/ws
 
-this.client = Stomp.over(() => new SockJS(wsUrl));
-this.client.reconnectDelay = 2000;
+    this.client = new Client({
+      brokerURL: ws,
+      reconnectDelay: 2000,
+      onConnect: () => {
+        this.client?.subscribe(`/topic/stream/${videoId}`, (msg: IMessage) => {
+          const parsed = JSON.parse(msg.body);
+          this.messagesSubject.next([...this.messagesSubject.value, parsed]);
+        });
+        onConnected?.();
+      },
+    });
 
-this.client.onConnect = () => {
-  this.client?.subscribe(`/topic/stream/${videoId}`, (msg: IMessage) => {
-    const parsed = JSON.parse(msg.body);
-    const current = this.messagesSubject.value;
-    this.messagesSubject.next([...current, parsed]);
-  });
-  onConnected?.();
-};
-
-this.client.activate();
-
+    this.client.activate();
   }
 
   send(videoId: number, sender: string, content: string) {
-    if (!this.client || !this.client.connected) return;
-    const payload: Partial<StreamChatMessage> = { sender, content };
-
-    // šalješ na /app/... (ApplicationDestinationPrefix = /app)
+    if (!this.client?.connected) return;
     this.client.publish({
       destination: `/app/stream/${videoId}/chat.send`,
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ sender, content }),
     });
   }
 
   disconnect() {
-    this.messagesSubject.next([]); // reset poruka kad izađeš
+    this.messagesSubject.next([]);
     this.client?.deactivate();
     this.client = null;
   }

@@ -14,6 +14,7 @@
       <ng-template #logged>
         <button class="btn ghost" routerLink="/upload">Upload</button>
         <button type="button" class="btn ghost" routerLink="/trending">Trending</button>
+        <button type="button" class="btn ghost" (click)="openWatchPartyRooms()">Party Watch</button>
 
         <button
           class="btn ghost"
@@ -126,6 +127,66 @@
           </div>
 
           <p class="desc" *ngIf="v.description">{{ v.description }}</p>
+
+          <!-- Watch Party akcija (iznad komentara) -->
+          <div class="wp-actions" *ngIf="video && !metaLoading">
+            <button
+              type="button"
+              class="btn wp-btn"
+              (click)="openPartyPicker($event)"
+              [disabled]="addToPartyBusy || addedToParty"
+            >
+              <span class="wp-plus">＋</span>
+              {{
+                addedToParty
+                  ? 'Dodato u sobu ' + (addedRoomId ?? '')
+                  : addToPartyBusy
+                    ? 'Dodajem…'
+                    : 'Watch Party'
+              }}
+            </button>
+
+            <div class="state error mini" *ngIf="addToPartyError">{{ addToPartyError }}</div>
+          </div>
+
+          <!-- Popup/overlay za izbor sobe -->
+          <div class="wp-overlay" *ngIf="partyPickerOpen" (click)="closePartyPicker()">
+            <div class="wp-modal" (click)="$event.stopPropagation()">
+              <div class="wp-modal-head">
+                <div class="wp-modal-title">Izaberi sobu</div>
+                <button class="btn ghost" (click)="closePartyPicker()">Zatvori</button>
+              </div>
+
+              <div class="state mini" *ngIf="roomsLoading">Učitavam tvoje sobe…</div>
+              <div class="state warn mini" *ngIf="!roomsLoading && roomsError">
+                {{ roomsError }}
+              </div>
+
+              <div class="wp-room-list" *ngIf="!roomsLoading && !roomsError">
+                <div class="state mini" *ngIf="myRooms.length === 0">
+                  Nemaš nijednu sobu. Prvo napravi Watch Party sobu.
+                </div>
+
+                <button
+                  type="button"
+                  class="wp-room"
+                  *ngFor="let r of myRooms"
+                  (click)="addCurrentVideoToRoom(r.roomId)"
+                  [disabled]="addToPartyBusy"
+                >
+                  <div class="wp-room-top">
+                    <div class="wp-room-code">{{ r.roomId }}</div>
+                    <div class="wp-room-meta">👥 {{ r.memberCount }} • 🎞️ {{ r.videoCount }}</div>
+                  </div>
+                  <div class="wp-room-sub">
+                    Host: {{ r.hostUsername ?? 'User #' + r.hostUserId }}
+                  </div>
+                </button>
+              </div>
+
+              <div class="state error mini" *ngIf="addToPartyError">{{ addToPartyError }}</div>
+            </div>
+          </div>
 
           <section class="comments" *ngIf="video && !metaLoading && !hideComments">
             <div class="comments-head">

@@ -1,0 +1,60 @@
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/videos" aria-label="jutjubic home">
+      <span class="logo">▶</span>
+      <span class="name">jutjubic</span>
+    </a>
+  </header>
+
+  <main class="content">
+    <div class="watch-layout">
+      <section class="main-col">
+        <div class="live-badge">
+          <span class="dot"></span> Watch Party LIVE
+          <span class="code">Soba: {{ roomId }}</span>
+        </div>
+
+        <div class="player-wrap" *ngIf="src">
+          <video
+            #player
+            class="player"
+            [src]="src"
+            controls
+            [muted]="true"
+            playsinline
+            preload="metadata"
+            (canplay)="tryAutoplay(player)"
+          ></video>
+        </div>
+
+        <div *ngIf="error" class="state error">{{ error }}</div>
+        <div *ngIf="!error && metaLoading" class="state">Učitavam detalje…</div>
+        <div *ngIf="!error && !metaLoading && metaError" class="state warn">{{ metaError }}</div>
+
+        <ng-container *ngIf="video as v">
+          <h1 class="title">{{ v.title }}</h1>
+
+          <div class="tags" *ngIf="v.tags && v.tags.length">
+            <span class="tag" *ngFor="let t of v.tags">#{{ t }}</span>
+          </div>
+
+          <div class="meta-row simple">
+            <div class="author">
+              <div class="avatar">
+                {{ (v.username ?? '?').slice(0, 1).toUpperCase() }}
+              </div>
+
+              <div class="author-text">
+                <div class="username">{{ v.username ?? 'Nepoznat autor' }}</div>
+                <div class="time">{{ formatTime(v.createdAt) }}</div>
+                <div class="location" *ngIf="v.location && v.location.trim()">{{ v.location }}</div>
+              </div>
+            </div>
+          </div>
+
+          <p class="desc" *ngIf="v.description">{{ v.description }}</p>
+        </ng-container>
+      </section>
+    </div>
+  </main>
+</div>

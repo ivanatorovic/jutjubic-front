@@ -42,25 +42,22 @@ popularIds: number[] = [];
     private uploadProgress: UploadProgressService,
     private auth: AuthService,
     private trendingService: LocalTrendingService,
-    private popularity: PopularityService
-
+     private popularity: PopularityService
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.auth.getUserIdFromToken();
 
-    this.uploadProgress.state$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((s) => {
-        this.uploadState = s;
+    this.uploadProgress.state$.pipe(takeUntil(this.destroy$)).subscribe((s) => {
+      this.uploadState = s;
 
-        if (s.status === 'done') {
-          this.load();
-          setTimeout(() => this.uploadProgress.clear(), 3000);
-        }
+      if (s.status === 'done') {
+        this.load();
+        setTimeout(() => this.uploadProgress.clear(), 3000);
+      }
 
-        this.cdr.detectChanges();
-      });
+      this.cdr.detectChanges();
+    });
 
     this.load();
   }
@@ -129,8 +126,9 @@ rankOf(videoId: number): number {
 
  
   async openTrending(): Promise<void> {
-
+  // odmah otvori trending (fallback)
   await this.router.navigate(['/trending']);
+
   const loc = await this.trendingService.getBrowserLocation(10000);
 
   if (loc) {
@@ -140,15 +138,16 @@ rankOf(videoId: number): number {
       replaceUrl: true,
     });
   }
-}
+}// ✅ Upload klik = user gesture -> browser popup za lokaciju (allow/block)
+// ✅ Upload klik: prvo otvori /upload (bez čekanja), pa onda traži lokaciju
 async openUpload(): Promise<void> {
-
+  // 1) odmah otvori upload stranicu
   await this.router.navigate(['/upload'], { replaceUrl: true });
 
-
+  // 2) tek onda pokušaj da dobiješ lokaciju (popup će se pojaviti sad)
   const loc = await this.trendingService.getBrowserLocation(10000);
 
-
+  // 3) update URL sa parametrima (ne menja stranicu, samo query)
   await this.router.navigate([], {
     queryParams: loc
       ? { lat: loc.lat, lon: loc.lon, locAllowed: 1 }
@@ -158,7 +157,9 @@ async openUpload(): Promise<void> {
   });
 }
 
-
+  async openWatchPartyRooms(): Promise<void> {
+    await this.router.navigate(['/watch-party-rooms']);
+  }
 
   openWatch(id: number) {
     this.router.navigate(['/watch', id]);
@@ -209,5 +210,4 @@ statusLabel(status: 'SCHEDULED' | 'LIVE' | 'ENDED'): string {
     default: return '';
   }
 }
-
 }
