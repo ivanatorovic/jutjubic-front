@@ -68,9 +68,7 @@ export class WatchPartyLiveComponent implements OnInit, OnDestroy {
       this.error = '';
       this.metaError = '';
 
-      // ✅ Obezbedi WS konekciju (ne diskonektuj u destroy jer je globalna)
-      // Ako ti connect() u servisu radi disconnect() uvek, preporuka je da ga unaprediš
-      // (vidi ispod "BONUS: connectIfNeeded").
+      
       this.wpWs.connect(this.roomId);
 
       this.src = this.videoService.streamUrl(id);
@@ -138,23 +136,23 @@ export class WatchPartyLiveComponent implements OnInit, OnDestroy {
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      // ignore
+      
     }
   }
 
-  // ✅ best-effort: ako host napušta live stranicu, resetuj currentVideoId na serveru
+  
   ngOnDestroy(): void {
-    // pošalji STOP samo ako sam host
+    
     if (this.roomId && this.isHostNow()) {
       this.wpWs.stop(this.roomId);
     }
 
     this.destroy$.next();
     this.destroy$.complete();
-    // ❌ ne disconnectuj ovde (global listener treba WS)
+    
   }
 
-  // (bonus) pokušaj i na zatvaranje taba
+  
   @HostListener('window:beforeunload')
   beforeUnload() {
     if (this.roomId && this.isHostNow()) {
@@ -162,7 +160,7 @@ export class WatchPartyLiveComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** ✅ Host detekcija iz ws.state$ + email iz tokena */
+  
   private isHostNow(): boolean {
     try {
       const st: any = this.wpWs.state$.value;

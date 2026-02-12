@@ -73,7 +73,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   showChat = false;
   isScheduledVideo = false;
 
-  // Watch Party UI
+  
   partyPickerOpen = false;
   myRooms: WatchPartyRoomPublic[] = [];
   roomsLoading = false;
@@ -81,7 +81,7 @@ export class WatchComponent implements OnInit, OnDestroy {
 
   addToPartyBusy = false;
   addToPartyError = '';
-  addedToParty = false; // zaključava dugme posle uspeha
+  addedToParty = false; 
   addedRoomId: string | null = null;
 
   private streamStartMs: number | null = null;
@@ -113,7 +113,7 @@ export class WatchComponent implements OnInit, OnDestroy {
 
       this.error = '';
       this.id = id;
-      // (re)connect chat samo ako je novi video
+      
       if (this.chatConnectedForVideoId !== id) {
         this.chat.disconnect();
         this.chatConnectedForVideoId = id;
@@ -731,16 +731,15 @@ export class WatchComponent implements OnInit, OnDestroy {
         replaceUrl: true,
       });
     }
-  } // ✅ Upload klik = user gesture -> browser popup za lokaciju (allow/block)
-  // ✅ Upload klik: prvo otvori /upload (bez čekanja), pa onda traži lokaciju
+  } 
   async openUpload(): Promise<void> {
-    // 1) odmah otvori upload stranicu
+    
     await this.router.navigate(['/upload'], { replaceUrl: true });
 
-    // 2) tek onda pokušaj da dobiješ lokaciju (popup će se pojaviti sad)
+    
     const loc = await this.trendingService.getBrowserLocation(10000);
 
-    // 3) update URL sa parametrima (ne menja stranicu, samo query)
+    
     await this.router.navigate([], {
       queryParams: loc
         ? { lat: loc.lat, lon: loc.lon, locAllowed: 1 }
@@ -758,7 +757,7 @@ export class WatchComponent implements OnInit, OnDestroy {
     ev?.stopPropagation();
     ev?.preventDefault();
 
-    // ako je već dodato, ne otvaraj ponovo
+    
     if (this.addedToParty) {
       this.addToPartyError = this.addedRoomId
         ? `Video je već dodat u sobu ${this.addedRoomId}.`

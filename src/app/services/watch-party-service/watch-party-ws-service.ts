@@ -34,13 +34,13 @@ export class WatchPartyWsService {
     const token = localStorage.getItem('access_token') ?? '';
 
     this.client = new Client({
-      brokerURL: `${environment.wsUrl}/ws`, // ws://localhost:8080/ws
+      brokerURL: `${environment.wsUrl}/ws`, 
       reconnectDelay: 2000,
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       debug: (msg) => console.log('[WS]', msg),
 
       onConnect: () => {
-        // 1) subscribe state
+        
         this.client?.subscribe(`/topic/watch-party/${roomId}/state`, (m) => {
           try {
             this.state$.next(JSON.parse(m.body));
@@ -49,7 +49,7 @@ export class WatchPartyWsService {
           }
         });
 
-        // 2) subscribe events
+        
         this.client?.subscribe(`/topic/watch-party/${roomId}/events`, (m) => {
           try {
             this.events$.next(JSON.parse(m.body));
@@ -58,7 +58,7 @@ export class WatchPartyWsService {
           }
         });
 
-        // 3) subscribe errors (user queue)
+        
         this.client?.subscribe(`/user/queue/watch-party/errors`, (m) => {
           try {
             this.error$.next(JSON.parse(m.body)?.message ?? 'Greška');
@@ -67,7 +67,7 @@ export class WatchPartyWsService {
           }
         });
 
-        // ✅ KLJUČNO: odmah zatraži inicijalni state
+        
         this.requestState(roomId);
       },
     });
@@ -75,12 +75,12 @@ export class WatchPartyWsService {
     this.client.activate();
   }
 
-  /** ✅ novo: traži serveru da pošalje trenutni state sobe */
+  
   requestState(roomId: string) {
     if (!this.client || !this.client.connected) return;
 
     this.client.publish({
-      destination: '/app/watch-party/state', // <-- backend metoda koju si dodao
+      destination: '/app/watch-party/state', 
       body: JSON.stringify({ roomId }),
     });
   }

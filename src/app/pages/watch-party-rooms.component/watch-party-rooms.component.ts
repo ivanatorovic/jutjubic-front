@@ -24,8 +24,8 @@ export class WatchPartyRoomsComponent implements OnInit, OnDestroy {
   currentUserId: number | null = null;
   createError = '';
   createPanelOpen = false;
-  isPublicSelected: boolean = true; // default Javna
-  private creatingNow = false; // samo guard da ne napravi 2 sobe brzim klikom
+  isPublicSelected: boolean = true; 
+  private creatingNow = false; 
 
   private destroy$ = new Subject<void>();
 
@@ -68,7 +68,7 @@ export class WatchPartyRoomsComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ✅ za sada prazno (placeholder), jer još nemaš room page
+  
   openRoom(roomId: string): void {
     this.router.navigate(['/watch-party', roomId]);
   }
@@ -130,10 +130,10 @@ export class WatchPartyRoomsComponent implements OnInit, OnDestroy {
 
     this.wp.createRoom(this.isPublicSelected).subscribe({
       next: (room) => {
-        // ✅ odmah zatvori panel
+        
         this.createPanelOpen = false;
 
-        // ✅ odmah osveži listu soba (da ne mora refresh)
+        
         this.load();
 
         this.creatingNow = false;

@@ -11,7 +11,7 @@ export interface PopularVideoDto {
 }
 
 export interface PopularBlockDto {
-  runAt: string;        // LocalDateTime kao string
+  runAt: string;        
   top3: PopularVideoDto[];
 }
 

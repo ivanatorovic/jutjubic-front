@@ -57,7 +57,7 @@ export class WatchPartyRoomComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.currentEmail = this.getEmailFromToken();
 
-    // route
+    
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((pm) => {
       const rid = pm.get('roomId');
       if (!rid) {
@@ -75,20 +75,20 @@ export class WatchPartyRoomComponent implements OnInit, OnDestroy {
       this.loadRoomAndConnect();
     });
 
-    // ws error stream
+    
     this.ws.error$.pipe(takeUntil(this.destroy$)).subscribe((msg) => {
       if (!msg) return;
       this.startError = msg;
       this.cdr.detectChanges();
     });
 
-    // ws state stream (UI update)
+    
     this.ws.state$.pipe(takeUntil(this.destroy$)).subscribe((st: any) => {
       if (!st) return;
       if (!this.room) return;
-      if (String(st.roomId ?? '') !== this.roomId) return; // ✅ bitno ako budeš imao više soba
+      if (String(st.roomId ?? '') !== this.roomId) return; 
 
-      // members from ws state
+      
       if (Array.isArray(st.members)) {
         this.members = st.members.map((m: any) => ({
           userId: Number(m.userId),
@@ -123,7 +123,7 @@ export class WatchPartyRoomComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // ❌ ne radi ws.disconnect() ovde — global listener treba WS da ostane živ
+    
   }
 
   private loadRoomAndConnect() {
@@ -146,7 +146,7 @@ export class WatchPartyRoomComponent implements OnInit, OnDestroy {
 
         this.loadVideos(r.videoIds ?? []);
 
-        // ✅ drži WS konekciju (global listener će hvatati VIDEO_STARTED i prebaciti svuda)
+        
         this.ws.connect(this.roomId);
       },
       error: (err: any) => {
@@ -270,23 +270,22 @@ export class WatchPartyRoomComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // ✅ ako je ovo već aktivni video - samo uđi u live (i za hosta i za člana)
+    
     if (this.room?.currentVideoId === videoId) {
       this.router.navigate(['/watch-party', this.roomId, 'live', videoId]);
       return;
     }
 
-    // ✅ samo host može da startuje novi
+    
     if (!this.isHost) {
       this.ws.error$.next('Samo host može pokrenuti video.');
       return;
     }
 
-    // host startuje novi video
+    
     this.ws.start(this.roomId, videoId);
 
-    // (opciono) možeš odmah i lokalno da navigiraš,
-    // a global listener će svakako prebaciti druge
+    
     this.router.navigate(['/watch-party', this.roomId, 'live', videoId]);
   }
 
@@ -318,7 +317,7 @@ export class WatchPartyRoomComponent implements OnInit, OnDestroy {
   logout() {
     localStorage.removeItem('access_token');
     this.currentEmail = null;
-    // ✅ ovde je smisleno i ws.disconnect() (logout = kraj sesije)
+    
     this.ws.disconnect();
     this.router.navigate(['/videos']);
   }

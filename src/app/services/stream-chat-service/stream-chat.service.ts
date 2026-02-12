@@ -12,8 +12,8 @@ export class StreamChatService {
   messages$ = this.messagesSubject.asObservable();
 
   connect(videoId: number, onConnected?: () => void) {
-    const base = environment.apiUrl.replace(/\/$/, ''); // npr http://localhost:8080
-    const ws = base.replace(/^http/, 'ws') + '/ws'; // ws://localhost:8080/ws
+    const base = environment.apiUrl.replace(/\/$/, ''); 
+    const ws = base.replace(/^http/, 'ws') + '/ws'; 
 
     this.client = new Client({
       brokerURL: ws,
